@@ -49,6 +49,11 @@ function AdminActionMenu({ confession, author, onViewDetails, isOpen, onToggle }
     onToggle(false);
   }
 
+  async function handleUnhide() {
+    await updateConfessionStatus(confession.id, "approved");
+    onToggle(false);
+  }
+
   async function handleDelete() {
     if (window.confirm("Are you sure you want to permanently delete this confession? This action cannot be undone.")) {
       await hardDeleteConfession(confession.id);
@@ -102,6 +107,14 @@ function AdminActionMenu({ confession, author, onViewDetails, isOpen, onToggle }
                 className="px-4 py-3.5 text-sm font-semibold text-amber-700 text-left hover:bg-amber-50 transition-colors border-b border-pink-100/50"
               >
                 Hide Confession
+              </button>
+            )}
+            {confession.status === "hidden" && (
+              <button
+                onClick={handleUnhide}
+                className="px-4 py-3.5 text-sm font-semibold text-emerald-600 text-left hover:bg-emerald-50 transition-colors border-b border-pink-100/50"
+              >
+                Unhide Confession
               </button>
             )}
             <button
