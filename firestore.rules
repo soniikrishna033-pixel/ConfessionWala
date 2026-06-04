@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Users ──────────────────────────────────────
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Auto-provisioning: user can create their own profile on first login
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Users can update their own profile (but not the role field)
+      allow update: if request.auth != null && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+      // Admins can read all user profiles (for deanonymization)
+      allow read: if request.auth != null
+                  && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ─── Confessions ────────────────────────────────
+    match /confessions/{confessionId} {
+      // Anyone can read approved confessions
+      allow read: if resource.data.status == "approved";
+      // Authenticated users can create confessions
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == "pending";
+      // Authenticated users can update likes/reports (limited fields)
+      allow update: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['likes', 'likedBy', 'reports', 'reportedBy', 'replies']);
+      // Admins: full read/write access
+      allow read, write: if request.auth != null
+                         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+  }
+}
