@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/__/auth/(.*)",
-      "destination": "https://confession-wala2.firebaseapp.com/__/auth/$1"
+      "source": "/__/(.*)",
+      "destination": "https://confession-wala2.firebaseapp.com/__/$1"
     },
     {
       "source": "/(.*)",

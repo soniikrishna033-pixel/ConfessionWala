@@ -4,7 +4,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Animated floating orbs for background refraction
 function FloatingOrbs() {
@@ -45,16 +45,12 @@ export default function LoginPage() {
     }
   }, [currentUser, navigate]);
 
-  const [error, setError] = useState("");
-
   async function handleGoogleLogin() {
-    setError("");
     try {
       await loginWithGoogle();
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || "Failed to log in with Google.");
     }
   }
 
@@ -120,16 +116,6 @@ export default function LoginPage() {
             </svg>
             Sign in with Google
           </motion.button>
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-3 rounded-lg bg-red-100 text-red-600 text-xs font-semibold"
-            >
-              {error}
-            </motion.div>
-          )}
 
           <motion.p
             initial={{ opacity: 0 }}
