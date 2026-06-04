@@ -8,13 +8,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBOu85QwpA98H3g1KYIahQS_joMKpmIlc0",
-  authDomain: "confession-wala2.firebaseapp.com",
-  projectId: "confession-wala2",
-  storageBucket: "confession-wala2.firebasestorage.app",
-  messagingSenderId: "582182557857",
-  appId: "1:582182557857:web:23e4a664a2c4dd4a7f38e0",
-  measurementId: "G-K98REC0HKG"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
