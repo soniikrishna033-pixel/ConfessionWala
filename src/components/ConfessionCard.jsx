@@ -153,10 +153,10 @@ export default function ConfessionCard({ confession, index, dynamicNum }) {
       <motion.article
       variants={cardVariants}
       initial="hidden"
-      animate="visible"
-      transition={{ delay: index * 0.06 }}
+      whileInView="visible"
+      viewport={{ once: true, margin: "0px 0px -40px 0px" }}
       whileHover={{ y: -2 }}
-      className="relative rounded-2xl backdrop-blur-xl bg-white/30 border border-white/60 shadow-lg overflow-hidden"
+      className="relative rounded-2xl backdrop-blur-md bg-white/40 border border-white/60 shadow-lg overflow-hidden will-change-transform"
     >
       {/* Subtle top accent line */}
       <div className="h-[2px] bg-pink-600/30" />

@@ -20,12 +20,12 @@ export default function FeedPage() {
       {/* Background shapes for glass refraction */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute -top-40 -left-20 w-[550px] h-[550px] rounded-full bg-pink-200 opacity-30 blur-3xl"
+          className="absolute -top-40 -left-20 w-[550px] h-[550px] rounded-full bg-pink-200 opacity-30 blur-3xl will-change-transform"
           animate={{ x: [0, 20, 0], y: [0, -15, 0] }}
           transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-1/3 -right-32 w-[450px] h-[450px] rounded-full bg-orange-100 opacity-25 blur-3xl"
+          className="absolute top-1/3 -right-32 w-[450px] h-[450px] rounded-full bg-orange-100 opacity-25 blur-3xl will-change-transform"
           animate={{ x: [0, -18, 0], y: [0, 12, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -61,7 +61,8 @@ export default function FeedPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-2xl bg-white/30 backdrop-blur-xl border border-white/60 shadow-lg p-5 space-y-3"
+              className="rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-lg p-5 space-y-3"
+
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-pink-100 animate-pulse" />
