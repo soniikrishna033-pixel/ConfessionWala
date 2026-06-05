@@ -5,7 +5,7 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { toggleLike, reportConfession, addReply, deleteReply } from "../hooks/useConfessions";
+import { toggleLike, reportConfession, addReply, deleteReply, updateConfessionStatus, hardDeleteConfession } from "../hooks/useConfessions";
 import { generateShareImageBlob } from "../utils/generateImage";
 import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
@@ -34,7 +34,7 @@ const cardVariants = {
   },
 };
 
-export default function ConfessionCard({ confession, index, dynamicNum }) {
+export default function ConfessionCard({ confession, index, dynamicNum, isChannelOwner }) {
   const { currentUser, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [showReplies, setShowReplies] = useState(false);
@@ -179,7 +179,17 @@ export default function ConfessionCard({ confession, index, dynamicNum }) {
           </div>
           
           {/* Right side empty for future actions (e.g. 3-dots menu) */}
-          <div></div>
+          <div className="flex gap-2">
+            {(isAdmin || isChannelOwner) && !isHidden && (
+              <button onClick={() => updateConfessionStatus(confession.id, "hidden")} className="text-[10px] text-orange-500 font-bold uppercase hover:underline">Hide</button>
+            )}
+            {(isAdmin || isChannelOwner) && isHidden && (
+              <button onClick={() => updateConfessionStatus(confession.id, "approved")} className="text-[10px] text-emerald-500 font-bold uppercase hover:underline">Unhide</button>
+            )}
+            {(isAdmin || isChannelOwner) && (
+              <button onClick={() => { if(window.confirm('Delete confession permanently?')) hardDeleteConfession(confession.id); }} className="text-[10px] text-red-500 font-bold uppercase hover:underline">Delete</button>
+            )}
+          </div>
         </div>
 
         {/* Body */}

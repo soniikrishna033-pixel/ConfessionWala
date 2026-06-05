@@ -2,9 +2,10 @@
 // Top navigation bar with glassmorphic styling, branding, and a slide-out drawer menu.
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { useMyChannels } from "../hooks/useChannels";
 
 function TypewriterLogo() {
   const [text, setText] = useState("");
@@ -52,7 +53,9 @@ function TypewriterLogo() {
 export default function Navbar() {
   const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { myChannels, loading: channelsLoading } = useMyChannels();
 
   async function handleLogout() {
     await logout();
@@ -139,21 +142,41 @@ export default function Navbar() {
 
               {/* Navigation Links */}
               <div className="flex-1 px-4 py-2 overflow-y-auto flex flex-col gap-1">
-                {[
-                  { name: "About Us", path: "/about" },
-                  { name: "Contact Us", path: "/contact" },
-                  { name: "Privacy Policy", path: "/privacy" },
-                  { name: "Terms of Service", path: "/terms" },
-                ].map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setMenuOpen(false)}
-                    className="px-4 py-4 rounded-2xl text-base font-semibold text-[#3f0009] hover:bg-pink-100/50 active:bg-pink-200/50 transition-colors border-b border-transparent hover:border-pink-200/50"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                <Link
+                  to="/"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl text-base font-semibold transition-colors border-b border-transparent ${location.pathname === '/' ? 'bg-pink-100/50 text-pink-700' : 'text-[#3f0009] hover:bg-pink-50'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.592 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                  </svg>
+                  Home
+                </Link>
+
+                <div className="mt-4 mb-2 px-4 text-xs font-extrabold tracking-wider text-slate-400 uppercase">
+                  My Channels
+                </div>
+
+                {channelsLoading ? (
+                  <div className="px-4 text-sm text-slate-400">Loading...</div>
+                ) : myChannels.length === 0 ? (
+                  <div className="px-4 text-sm text-slate-400">No channels joined.</div>
+                ) : (
+                  myChannels.map(c => {
+                    const isActive = location.pathname === `/c/${c.id}`;
+                    return (
+                      <Link 
+                        key={c.id} 
+                        to={`/c/${c.id}`} 
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition ${isActive ? 'bg-pink-600 text-white shadow-md' : 'text-slate-700 hover:bg-pink-50'}`}
+                      >
+                        <img src={c.pfpUrl} alt="" className="w-8 h-8 rounded-full object-cover bg-white" />
+                        <span className="font-bold text-base truncate">{c.name}</span>
+                      </Link>
+                    )
+                  })
+                )}
 
                 {isAdmin && (
                   <Link

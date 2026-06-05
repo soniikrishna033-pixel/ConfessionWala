@@ -26,8 +26,8 @@ export default function ContactPage() {
             <div className="bg-white/50 backdrop-blur-md rounded-2xl p-6 border border-white/60 shadow-inner">
               <div className="mb-4">
                 <span className="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Email Support</span>
-                <a href="mailto:soniikrishna033@gmail.com" className="text-xl font-bold text-pink-600 hover:text-pink-700 transition-colors break-all">
-                  soniikrishna033@gmail.com
+                <a href="mailto:confessionwala71@gmail.com" className="text-xl font-bold text-pink-600 hover:text-pink-700 transition-colors break-all">
+                  confessionwala71@gmail.com
                 </a>
               </div>
               

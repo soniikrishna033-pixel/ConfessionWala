@@ -4,32 +4,62 @@ service cloud.firestore {
 
     // ─── Users ──────────────────────────────────────
     match /users/{userId} {
-      // Users can read their own profile
       allow read: if request.auth != null && request.auth.uid == userId;
-      // Auto-provisioning: user can create their own profile on first login
       allow create: if request.auth != null && request.auth.uid == userId;
-      // Users can update their own profile (but not the role field)
       allow update: if request.auth != null && request.auth.uid == userId
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
-      // Admins can read all user profiles (for deanonymization)
       allow read: if request.auth != null
                   && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
+    // ─── Channels ───────────────────────────────────
+    match /channels/{channelId} {
+      allow read: if resource.data.isPrivate == false || 
+                     (request.auth != null && get(/databases/$(database)/documents/channel_members/$(channelId + "_" + request.auth.uid)).data.status == "approved") ||
+                     (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
+                            (request.auth.uid == resource.data.ownerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
+    }
+
+    // ─── Channel Members ────────────────────────────
+    match /channel_members/{memberId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid &&
+         (
+            request.resource.data.status == "pending" ||
+            (request.resource.data.status == "approved" && get(/databases/$(database)/documents/channels/$(request.resource.data.channelId)).data.isPrivate == false) ||
+            (request.resource.data.status == "approved" && get(/databases/$(database)/documents/channels/$(request.resource.data.channelId)).data.inviteCode == request.resource.data.providedCode) ||
+            get(/databases/$(database)/documents/channels/$(request.resource.data.channelId)).data.ownerId == request.auth.uid
+         );
+      allow update, delete: if request.auth != null && 
+                            (request.auth.uid == resource.data.userId || 
+                             get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.ownerId == request.auth.uid ||
+                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
+    }
+
     // ─── Confessions ────────────────────────────────
     match /confessions/{confessionId} {
-      // Anyone can read approved confessions
-      allow read: if resource.data.status == "approved";
-      // Authenticated users can create confessions
+      allow read: if get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.isPrivate == false || 
+                     (request.auth != null && get(/databases/$(database)/documents/channel_members/$(resource.data.channelId + "_" + request.auth.uid)).data.status == "approved") ||
+                     (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.status == "pending";
-      // Authenticated users can update likes/reports (limited fields)
+                    && (request.resource.data.status == "pending" || request.resource.data.status == "approved");
       allow update: if request.auth != null
-                    && request.resource.data.keys().hasOnly(['likes', 'likedBy', 'reports', 'reportedBy', 'replies']);
-      // Admins: full read/write access
+                    && (
+                      request.resource.data.keys().hasOnly(['likes', 'likedBy', 'reports', 'reportedBy', 'replies']) ||
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isHidden']) && get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.ownerId == request.auth.uid)
+                    );
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/channels/$(resource.data.channelId)).data.ownerId == request.auth.uid;
       allow read, write: if request.auth != null
                          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ─── Metadata ───────────────────────────────────
+    match /metadata/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
   }
 }

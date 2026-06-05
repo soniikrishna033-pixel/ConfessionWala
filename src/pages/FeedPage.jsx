@@ -1,143 +1,196 @@
 // src/pages/FeedPage.jsx
-// Main public screen — single continuous scrolling feed of all approved confessions.
-// No category filters. Clean minimalist design with glassmorphism.
-
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useApprovedConfessions } from "../hooks/useConfessions";
-import ConfessionCard from "../components/ConfessionCard";
-import ComposeModal from "../components/ComposeModal";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { usePublicChannels, useMyChannels, createChannel, joinChannel } from "../hooks/useChannels";
 
 export default function FeedPage() {
-  const { confessions, loading } = useApprovedConfessions();
-  const [composeOpen, setComposeOpen] = useState(false);
   const { currentUser } = useAuth();
+  const { channels: publicChannels, loading: pubLoading } = usePublicChannels();
+  const { myChannels } = useMyChannels();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // Create Channel Form State
+  const [newChanName, setNewChanName] = useState("");
+  const [newChanDesc, setNewChanDesc] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if(!newChanName.trim() || !currentUser) return;
+    setIsCreating(true);
+    try {
+      const id = await createChannel(newChanName, newChanDesc, null, isPrivate, currentUser.uid);
+      setShowCreateModal(false);
+      navigate(`/c/${id}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create channel");
+    }
+    setIsCreating(false);
+  };
+
+  const handleJoin = async (channelId, isPriv) => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    try {
+      await joinChannel(channelId, currentUser.uid, isPriv);
+      if(!isPriv) navigate(`/c/${channelId}`);
+      else alert("Requested to join. Waiting for admin approval.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to join");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#fff9e9] relative">
-      {/* Background shapes for glass refraction */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute -top-40 -left-20 w-[550px] h-[550px] rounded-full bg-pink-200 opacity-30 blur-3xl will-change-transform"
           animate={{ x: [0, 20, 0], y: [0, -15, 0] }}
           transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div
-          className="absolute top-1/3 -right-32 w-[450px] h-[450px] rounded-full bg-orange-100 opacity-25 blur-3xl will-change-transform"
-          animate={{ x: [0, -18, 0], y: [0, 12, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
       </div>
 
-      {/* Spacer for fixed navbar */}
-      <div className="h-16" />
-
-      {/* Hero */}
-      <div className="px-4 pt-6 pb-4 max-w-2xl mx-auto relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-center mb-6"
-        >
-          <h1 className="text-2xl font-extrabold text-[#3f0009] mb-1">
-            Confessions
-          </h1>
-          <p className="text-xs text-slate-500">
-            Anonymous thoughts from our community
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Feed */}
-      <div className="px-4 pb-28 max-w-2xl mx-auto space-y-4 relative z-10">
-        {loading ? (
-          // Skeleton loader
-          [...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-lg p-5 space-y-3"
-
+      <div className="px-4 pt-10 max-w-2xl mx-auto relative z-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-extrabold text-[#3f0009]">Channels</h1>
+          {currentUser && (
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-700 transition"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-100 animate-pulse" />
-                <div className="space-y-1.5">
-                  <div className="w-20 h-3 bg-slate-200 rounded animate-pulse" />
-                  <div className="w-14 h-2 bg-slate-200 rounded animate-pulse" />
-                </div>
+              + Create
+            </button>
+          )}
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input 
+            type="text" 
+            placeholder="Search channels..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-4 bg-white/60 backdrop-blur-md border border-white rounded-2xl outline-none focus:ring-2 focus:ring-pink-300 shadow-sm font-semibold text-slate-700"
+          />
+        </div>
+
+        {/* Channel List */}
+        <div className="space-y-4">
+          {searchQuery.trim() === "" ? (
+            /* Show My Channels Default View (WhatsApp Style) */
+            <>
+              {myChannels.length === 0 ? (
+                <div className="text-center text-slate-500 py-10 font-bold">You haven't joined any channels yet.<br/><span className="text-sm font-normal">Use the search bar above to explore public channels.</span></div>
+              ) : (
+                myChannels.map(c => (
+                  <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center gap-4 shadow-sm hover:shadow-md transition">
+                    <img src={c.pfpUrl} alt="" className="w-14 h-14 rounded-full object-cover shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-slate-800 text-lg truncate flex items-center gap-1">
+                        {c.name}
+                        {c.isPrivate && <span title="Private Channel" className="text-sm">🔒</span>}
+                      </h3>
+                      <p className="text-sm text-slate-500 truncate">{c.description || "No description"}</p>
+                    </div>
+                    <div className="text-pink-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </>
+          ) : (
+            /* Show Search Results */
+            <>
+              {pubLoading ? <div className="text-slate-500 font-bold">Loading...</div> : (
+                <>
+                  {publicChannels
+                    .filter(c => !myChannels.find(mc => mc.id === c.id))
+                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase())))
+                    .map(c => (
+                    <div key={c.id} className="p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <img src={c.pfpUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+                        <div>
+                          <h3 className="font-bold text-slate-800 flex items-center gap-1">
+                            {c.name}
+                            {c.isPrivate && <span title="Private Channel" className="text-xs">🔒</span>}
+                          </h3>
+                          <p className="text-xs text-slate-500">{c.description || "No description"}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleJoin(c.id, c.isPrivate)} className="px-4 py-2 bg-pink-100 text-pink-700 font-bold rounded-lg text-sm shrink-0">
+                        {c.isPrivate ? "Request" : "Join"}
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {myChannels
+                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase())))
+                    .map(c => (
+                    <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm opacity-70 hover:opacity-100">
+                      <div className="flex items-center gap-4">
+                        <img src={c.pfpUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+                        <div>
+                          <h3 className="font-bold text-slate-800 flex items-center gap-1">
+                            {c.name}
+                            {c.isPrivate && <span title="Private Channel" className="text-xs">🔒</span>}
+                          </h3>
+                          <p className="text-xs text-slate-500">{c.description || "No description"}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Joined</span>
+                    </Link>
+                  ))}
+
+                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && 
+                   myChannels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                     <div className="text-slate-500 font-bold text-center py-10">No channels match your search.</div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <h2 className="text-xl font-bold mb-4 text-[#3f0009]">Create Channel</h2>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1">Channel Name</label>
+                <input required value={newChanName} onChange={e=>setNewChanName(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="e.g. DU Confessions" />
               </div>
-              <div className="space-y-2">
-                <div className="w-full h-3 bg-slate-200 rounded animate-pulse" />
-                <div className="w-4/5 h-3 bg-slate-200 rounded animate-pulse" />
-                <div className="w-3/5 h-3 bg-slate-200 rounded animate-pulse" />
+              <div>
+                <label className="text-xs font-bold text-slate-500 block mb-1">Description</label>
+                <textarea value={newChanDesc} onChange={e=>setNewChanDesc(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200 resize-none h-20" placeholder="What is this channel about?" />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="priv" checked={isPrivate} onChange={e=>setIsPrivate(e.target.checked)} className="w-4 h-4 text-pink-600" />
+                <label htmlFor="priv" className="text-sm font-bold text-slate-600">Make Private (Invite & Approve Only)</label>
               </div>
               <div className="flex gap-3 pt-2">
-                <div className="w-16 h-7 bg-slate-200 rounded-xl animate-pulse" />
-                <div className="w-16 h-7 bg-slate-200 rounded-xl animate-pulse" />
-                <div className="w-16 h-7 bg-slate-200 rounded-xl animate-pulse" />
+                <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 p-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">Cancel</button>
+                <button type="submit" disabled={isCreating} className="flex-1 p-3 rounded-xl font-bold text-white bg-pink-600 hover:bg-pink-700 disabled:opacity-50">Create</button>
               </div>
-            </motion.div>
-          ))
-        ) : confessions.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-pink-100 flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-              </svg>
-            </div>
-            <p className="text-sm font-semibold text-slate-500">
-              No confessions yet
-            </p>
-            <p className="text-xs text-slate-400 mt-1">
-              Be the first to share your secret
-            </p>
+            </form>
           </motion.div>
-        ) : (
-          confessions.map((confession, i) => (
-            <ConfessionCard 
-              key={confession.id} 
-              confession={confession} 
-              index={i} 
-              dynamicNum={confessions.length - i}
-            />
-          ))
-        )}
-      </div>
-
-      {/* Floating compose button or Login prompt */}
-      {currentUser ? (
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          whileHover={{ scale: 1.05 }}
-          onClick={() => setComposeOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-pink-600 text-white flex items-center justify-center shadow-xl shadow-pink-600/30 hover:bg-pink-700 hover:shadow-2xl hover:shadow-pink-600/40 transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </motion.button>
-      ) : (
-        <Link to="/login">
-          <motion.div
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.05 }}
-            className="fixed bottom-6 right-6 z-40 px-6 py-4 rounded-2xl bg-[#3f0009] text-white flex items-center justify-center shadow-xl shadow-[#3f0009]/30 hover:opacity-90 transition-all cursor-pointer font-bold text-sm"
-          >
-            Log in to confess
-          </motion.div>
-        </Link>
+        </div>
       )}
-
-      <ComposeModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} />
     </div>
   );
 }

@@ -23,19 +23,24 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
-// ─── Public Feed Hook ────────────────────────────────────────────
-export function useApprovedConfessions() {
+// ─── Channel Feed Hook ────────────────────────────────────────────
+export function useChannelConfessions(channelId) {
   const [confessions, setConfessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!channelId) return;
+    setLoading(true);
+    
     const q = query(
       collection(db, "confessions"),
-      where("status", "in", ["approved", "hidden"])
+      where("channelId", "==", channelId)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const docs = snapshot.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((d) => d.status === "approved" || d.status === "hidden");
       docs.sort((a, b) => {
         const timeA = a.timestamp?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
         const timeB = b.timestamp?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
@@ -49,7 +54,7 @@ export function useApprovedConfessions() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [channelId]);
 
   return { confessions, loading };
 }
@@ -108,7 +113,7 @@ export function useAllUsers() {
 // ─── Mutation helpers ────────────────────────────────────────────
 
 /** Submit a new confession with a sequentially numbered ID */
-export async function submitConfession(uid, content, category = "general") {
+export async function submitConfession(uid, channelId, content, category = "general") {
   try {
     const counterRef = doc(db, "metadata", "counters");
     const newConfessionRef = doc(collection(db, "confessions"));
@@ -126,7 +131,8 @@ export async function submitConfession(uid, content, category = "general") {
       transaction.set(counterRef, { confessionCount: nextCount }, { merge: true });
       
       transaction.set(newConfessionRef, {
-        uid,
+        userId: uid,
+        channelId,
         content,
         category,
         confessionNum: nextCount,

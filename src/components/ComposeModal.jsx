@@ -24,7 +24,7 @@ const modalVariants = {
   exit: { opacity: 0, y: 40, scale: 0.95, transition: { duration: 0.2 } },
 };
 
-export default function ComposeModal({ isOpen, onClose }) {
+export default function ComposeModal({ isOpen, onClose, channelId }) {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [text, setText] = useState("");
@@ -43,7 +43,7 @@ export default function ComposeModal({ isOpen, onClose }) {
     setErrorMsg("");
     
     try {
-      await submitConfession(currentUser.uid, text.trim(), "general");
+      await submitConfession(currentUser.uid, channelId, text.trim(), "general");
       setSuccess(true);
       setText("");
       setTimeout(() => {
@@ -52,7 +52,7 @@ export default function ComposeModal({ isOpen, onClose }) {
       }, 1500);
     } catch (error) {
       console.error("Failed to submit in ComposeModal", error);
-      setErrorMsg("Firebase blocked the upload. Please update your Firestore Security Rules to allow writes.");
+      setErrorMsg("Something went wrong. Please try again later.");
     } finally {
       setSubmitting(false);
     }
