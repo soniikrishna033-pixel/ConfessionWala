@@ -2,11 +2,33 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useMyChannels } from "../hooks/useChannels";
+import { useEffect, useRef } from "react";
 
 export default function Sidebar() {
   const { currentUser, isAdmin } = useAuth();
   const { myChannels, loading } = useMyChannels();
   const location = useLocation();
+  const bannerRef = useRef(null);
+
+  useEffect(() => {
+    if (bannerRef.current && !bannerRef.current.querySelector('script')) {
+      const conf = document.createElement('script');
+      conf.type = 'text/javascript';
+      conf.innerHTML = `atOptions = {
+        'key' : '523502e7e7c53a05d026f46b2d64851c',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+      };`;
+      bannerRef.current.appendChild(conf);
+
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = "https://www.highperformanceformat.com/523502e7e7c53a05d026f46b2d64851c/invoke.js";
+      bannerRef.current.appendChild(script);
+    }
+  }, []);
 
   if (!currentUser) return null;
 
@@ -59,6 +81,11 @@ export default function Sidebar() {
           Super Admin
         </Link>
       )}
+
+      {/* Banner Ad */}
+      <div className="mt-8 flex justify-center w-full min-h-[600px]">
+        <div ref={bannerRef}></div>
+      </div>
     </div>
   );
 }
