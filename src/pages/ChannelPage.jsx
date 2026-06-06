@@ -136,20 +136,11 @@ export default function ChannelPage() {
       <div className="max-w-2xl mx-auto px-4 w-full flex justify-center mb-2 relative z-10">
         <iframe 
           title="Nav Ad"
+          src="/ad-nav.html"
           width="100%"
           height="60"
           style={{ border: "none", overflow: "hidden" }}
           scrolling="no"
-          srcDoc={`
-            <!DOCTYPE html>
-            <html>
-              <head><style>body { margin: 0; padding: 0; display: flex; justify-content: center; }</style></head>
-              <body>
-                <script async="async" data-cfasync="false" src="https://outrightphiladelphia.com/d531c3d63a248990fa7432602f8d341b/invoke.js"></script>
-                <div id="container-d531c3d63a248990fa7432602f8d341b"></div>
-              </body>
-            </html>
-          `}
         />
       </div>
 
@@ -171,6 +162,18 @@ export default function ChannelPage() {
             </React.Fragment>
           ))
         )}
+
+        {/* Mobile Banner Ad at bottom of feed */}
+        <div className="md:hidden w-full flex justify-center mt-8 pt-4 border-t border-pink-200/50">
+          <iframe 
+            title="Mobile Banner Ad"
+            src="/ad-banner.html"
+            width="160"
+            height="600"
+            style={{ border: "none", overflow: "hidden" }}
+            scrolling="no"
+          />
+        </div>
       </div>
 
       {currentUser ? (
