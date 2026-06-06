@@ -193,9 +193,23 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
         </div>
 
         {/* Body */}
-        <p className={`text-sm leading-relaxed mb-4 whitespace-pre-wrap ${isHidden ? 'italic font-bold text-slate-400' : 'text-slate-800'}`}>
-          {displayContent}
-        </p>
+        {((index + 1) % 4 === 0) ? (
+          <a 
+            href="https://outrightphiladelphia.com/wyginqbn?key=421818159b7053fd3253e4e79abd1b0b" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="block mb-4 hover:opacity-80 transition-opacity"
+            title="Sponsored Link"
+          >
+            <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isHidden ? 'italic font-bold text-slate-400' : 'text-slate-800'}`}>
+              {displayContent}
+            </p>
+          </a>
+        ) : (
+          <p className={`text-sm leading-relaxed mb-4 whitespace-pre-wrap ${isHidden ? 'italic font-bold text-slate-400' : 'text-slate-800'}`}>
+            {displayContent}
+          </p>
+        )}
 
         {/* Action bar */}
         <div className={`flex items-center gap-1 border-t border-white/40 pt-3 -mx-1 ${isHidden ? 'opacity-50 pointer-events-none grayscale' : ''}`}>

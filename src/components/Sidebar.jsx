@@ -8,27 +8,27 @@ export default function Sidebar() {
   const { currentUser, isAdmin } = useAuth();
   const { myChannels, loading } = useMyChannels();
   const location = useLocation();
-  const bannerRef = useRef(null);
-
-  useEffect(() => {
-    if (bannerRef.current && !bannerRef.current.querySelector('script')) {
-      const conf = document.createElement('script');
-      conf.type = 'text/javascript';
-      conf.innerHTML = `atOptions = {
-        'key' : '523502e7e7c53a05d026f46b2d64851c',
-        'format' : 'iframe',
-        'height' : 600,
-        'width' : 160,
-        'params' : {}
-      };`;
-      bannerRef.current.appendChild(conf);
-
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = "https://outrightphiladelphia.com/523502e7e7c53a05d026f46b2d64851c/invoke.js";
-      bannerRef.current.appendChild(script);
-    }
-  }, []);
+  // Using iframe to ensure the ad script runs properly
+  const adIframeContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>body { margin: 0; padding: 0; display: flex; justify-content: center; }</style>
+      </head>
+      <body>
+        <script>
+          atOptions = {
+            'key' : '523502e7e7c53a05d026f46b2d64851c',
+            'format' : 'iframe',
+            'height' : 600,
+            'width' : 160,
+            'params' : {}
+          };
+        </script>
+        <script src="https://outrightphiladelphia.com/523502e7e7c53a05d026f46b2d64851c/invoke.js"></script>
+      </body>
+    </html>
+  `;
 
   if (!currentUser) return null;
 
@@ -84,7 +84,14 @@ export default function Sidebar() {
 
       {/* Banner Ad */}
       <div className="mt-8 flex justify-center w-full min-h-[600px]">
-        <div ref={bannerRef}></div>
+        <iframe
+          title="Sidebar Ad"
+          srcDoc={adIframeContent}
+          width="160"
+          height="600"
+          style={{ border: "none", overflow: "hidden" }}
+          scrolling="no"
+        />
       </div>
     </div>
   );

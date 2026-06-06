@@ -6,7 +6,6 @@ import { useChannel, joinChannel, leaveChannel, useMyChannels } from "../hooks/u
 import { useChannelConfessions } from "../hooks/useConfessions";
 import ConfessionCard from "../components/ConfessionCard";
 import ComposeModal from "../components/ComposeModal";
-import AdCard from "../components/AdCard";
 import { useAuth } from "../context/AuthContext";
 
 export default function ChannelPage() {
@@ -133,6 +132,27 @@ export default function ChannelPage() {
         </div>
       </div>
 
+      {/* Navigate Bar Ad */}
+      <div className="max-w-2xl mx-auto px-4 w-full flex justify-center mb-2 relative z-10">
+        <iframe 
+          title="Nav Ad"
+          width="100%"
+          height="60"
+          style={{ border: "none", overflow: "hidden" }}
+          scrolling="no"
+          srcDoc={`
+            <!DOCTYPE html>
+            <html>
+              <head><style>body { margin: 0; padding: 0; display: flex; justify-content: center; }</style></head>
+              <body>
+                <script async="async" data-cfasync="false" src="https://outrightphiladelphia.com/d531c3d63a248990fa7432602f8d341b/invoke.js"></script>
+                <div id="container-d531c3d63a248990fa7432602f8d341b"></div>
+              </body>
+            </html>
+          `}
+        />
+      </div>
+
       {/* Feed */}
       <div className="px-4 pb-28 max-w-2xl mx-auto space-y-4 relative z-10 mt-6">
         {confLoading ? (
@@ -148,7 +168,6 @@ export default function ChannelPage() {
                 dynamicNum={confessions.length - i}
                 isChannelOwner={isOwner}
               />
-              {(i + 1) % 5 === 0 && <AdCard />}
             </React.Fragment>
           ))
         )}
