@@ -2,13 +2,15 @@
 // Glassmorphic confession card with Like, Reply, Share, Report interactions.
 // Clean minimalist design — no emojis, no categories.
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { toggleLike, reportConfession, addReply, deleteReply, updateConfessionStatus, hardDeleteConfession } from "../hooks/useConfessions";
 import { generateShareImageBlob } from "../utils/generateImage";
 import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
+import { db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 function timeAgo(date) {
   if (!date) return "";
@@ -43,6 +45,37 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
   const [submittingReply, setSubmittingReply] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [writerDetails, setWriterDetails] = useState(null);
+  const [loadingWriter, setLoadingWriter] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  async function handleViewWriter() {
+    setIsMenuOpen(false);
+    setLoadingWriter(true);
+    try {
+      const userDoc = await getDoc(doc(db, "users", confession.userId));
+      if (userDoc.exists()) {
+        setWriterDetails(userDoc.data());
+      } else {
+        setWriterDetails({ displayName: "Anonymous", email: "No email linked", photoURL: "" });
+      }
+    } catch (e) {
+      console.error(e);
+      setWriterDetails({ displayName: "Error fetching", email: "Unknown", photoURL: "" });
+    }
+    setLoadingWriter(false);
+  }
 
   const isHidden = confession.status === "hidden";
   const displayContent = isHidden 
@@ -178,16 +211,68 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
             </p>
           </div>
           
-          {/* Right side empty for future actions (e.g. 3-dots menu) */}
+          {/* Right side 3-dots menu for Admin/Owner */}
           <div className="flex gap-2">
-            {(isAdmin || isChannelOwner) && !isHidden && (
-              <button onClick={() => updateConfessionStatus(confession.id, "hidden")} className="text-[10px] text-orange-500 font-bold uppercase hover:underline">Hide</button>
-            )}
-            {(isAdmin || isChannelOwner) && isHidden && (
-              <button onClick={() => updateConfessionStatus(confession.id, "approved")} className="text-[10px] text-emerald-500 font-bold uppercase hover:underline">Unhide</button>
-            )}
+            {loadingWriter && <span className="text-[10px] text-pink-600 font-bold self-center">Loading...</span>}
             {(isAdmin || isChannelOwner) && (
-              <button onClick={() => { if(window.confirm('Delete confession permanently?')) hardDeleteConfession(confession.id); }} className="text-[10px] text-red-500 font-bold uppercase hover:underline">Delete</button>
+              <div className="relative" ref={menuRef}>
+                <button 
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-1.5 rounded-full hover:bg-white/50 transition-colors text-slate-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                  </svg>
+                </button>
+
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-pink-100 shadow-xl z-50 overflow-hidden flex flex-col"
+                    >
+                      {isAdmin && (
+                        <button
+                          onClick={handleViewWriter}
+                          className="px-4 py-3 text-xs font-bold text-[#3f0009] text-left hover:bg-pink-50 transition-colors border-b border-pink-50"
+                        >
+                          View Writer Details
+                        </button>
+                      )}
+                      {!isHidden && (
+                        <button
+                          onClick={() => { updateConfessionStatus(confession.id, "hidden"); setIsMenuOpen(false); }}
+                          className="px-4 py-3 text-xs font-bold text-amber-600 text-left hover:bg-amber-50 transition-colors border-b border-pink-50"
+                        >
+                          Hide Confession
+                        </button>
+                      )}
+                      {isHidden && (
+                        <button
+                          onClick={() => { updateConfessionStatus(confession.id, "approved"); setIsMenuOpen(false); }}
+                          className="px-4 py-3 text-xs font-bold text-emerald-600 text-left hover:bg-emerald-50 transition-colors border-b border-pink-50"
+                        >
+                          Unhide Confession
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { 
+                          if(window.confirm('Delete confession permanently?')) {
+                            hardDeleteConfession(confession.id);
+                          }
+                          setIsMenuOpen(false);
+                        }}
+                        className="px-4 py-3 text-xs font-bold text-red-600 text-left hover:bg-red-50 transition-colors"
+                      >
+                        Delete Confession
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
         </div>
@@ -363,6 +448,44 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
         </AnimatePresence>
       </div>
     </motion.article>
+
+      {/* Writer Details Modal */}
+      <AnimatePresence>
+        {writerDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            onClick={() => setWriterDetails(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-[#fff9e9]/95 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/50 text-center"
+            >
+              <h2 className="text-2xl font-extrabold text-[#3f0009] mb-6">Writer Details</h2>
+              <img 
+                src={writerDetails.photoURL || "/logo.png"} 
+                alt="Profile" 
+                className="w-24 h-24 mx-auto rounded-full border-4 border-white shadow-lg mb-4 object-cover bg-white"
+                referrerPolicy="no-referrer"
+              />
+              <p className="text-xl font-bold text-[#3f0009] mb-1">{writerDetails.displayName || "Unknown User"}</p>
+              <p className="text-sm font-semibold text-slate-500 mb-8">{writerDetails.email || "No email available"}</p>
+              
+              <button
+                onClick={() => setWriterDetails(null)}
+                className="w-full py-3.5 rounded-xl bg-[#3f0009] text-white font-bold text-sm shadow-xl shadow-pink-900/20 hover:bg-pink-900 transition-colors"
+              >
+                Close Window
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
