@@ -26,7 +26,7 @@ export default function AdCard() {
 
       {/* Smart Direct Link Button */}
       <a 
-        href="https://www.effectivecpmnetwork.com/wyginqbn?key=421818159b7053fd3253e4e79abd1b0b" 
+        href="https://outrightphiladelphia.com/wyginqbn?key=421818159b7053fd3253e4e79abd1b0b" 
         target="_blank" 
         rel="noopener noreferrer"
         className="mt-6 mb-2 block w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold text-sm text-center py-3.5 rounded-xl shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] transition-all"
