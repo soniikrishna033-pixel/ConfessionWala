@@ -58,9 +58,7 @@ function AdminActionMenu({ confession, author, onViewDetails, isOpen, onToggle }
   }
 
   async function handleDelete() {
-    if (window.confirm("Are you sure you want to permanently delete this confession? This action cannot be undone.")) {
-      await hardDeleteConfession(confession.id);
-    }
+    await hardDeleteConfession(confession.id);
     onToggle(false);
   }
 
