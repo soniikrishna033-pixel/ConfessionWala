@@ -180,8 +180,8 @@ export default function FeedPage() {
             <iframe 
               title="Mobile Banner Ad"
               src="/ad-banner.html"
-              width="160"
-              height="600"
+              width="300"
+              height="250"
               style={{ border: "none", overflow: "hidden" }}
               scrolling="no"
             />
