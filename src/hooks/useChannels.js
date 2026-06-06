@@ -1,6 +1,6 @@
 // src/hooks/useChannels.js
 import { useState, useEffect } from "react";
-import { collection, query, where, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 
@@ -139,8 +139,20 @@ export async function leaveChannel(channelId, userId) {
   await deleteDoc(memberRef);
 }
 
-// Delete a channel
+// Delete a channel and its sub-resources
 export async function deleteChannel(channelId) {
+  // 1. Delete all channel_members for this channel
+  const memQuery = query(collection(db, "channel_members"), where("channelId", "==", channelId));
+  const memSnap = await getDocs(memQuery);
+  const deleteMemPromises = memSnap.docs.map(d => deleteDoc(d.ref));
+  await Promise.all(deleteMemPromises);
+
+  // 2. Delete all confessions for this channel
+  const confQuery = query(collection(db, "confessions"), where("channelId", "==", channelId));
+  const confSnap = await getDocs(confQuery);
+  const deleteConfPromises = confSnap.docs.map(d => deleteDoc(d.ref));
+  await Promise.all(deleteConfPromises);
+
+  // 3. Delete the channel document
   await deleteDoc(doc(db, "channels", channelId));
-  // Note: in production, a Cloud Function should delete all subcollections/confessions and members.
 }

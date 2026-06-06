@@ -15,7 +15,8 @@ import {
   dismissReports,
 } from "../hooks/useConfessions";
 import { db } from "../firebaseConfig";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
+import { deleteChannel } from "../hooks/useChannels";
 
 // Helper for relative time
 function timeAgo(date) {
@@ -157,8 +158,8 @@ export default function AdminPage() {
   }, [isAdmin, activeTab]);
 
   const handleDeleteChannel = async (id) => {
-    if (window.confirm("Delete this room forever?")) {
-      await deleteDoc(doc(db, "channels", id));
+    if (window.confirm("Delete this room forever? This will also delete all its confessions.")) {
+      await deleteChannel(id);
       setChannels(c => c.filter(x => x.id !== id));
     }
   };
@@ -256,7 +257,7 @@ export default function AdminPage() {
           <AnimatePresence mode="popLayout">
             {filtered.map((confession, i) => {
               // CLIENT-SIDE JOIN: Map the confession's UID to the user dictionary
-              const author = users[confession.uid] || { displayName: "Anonymous", email: "No Email Linked", photoURL: "" };
+              const author = users[confession.userId] || { displayName: "Anonymous", email: "No Email Linked", photoURL: "" };
 
               return (
                 <motion.div
