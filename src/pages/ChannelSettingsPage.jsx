@@ -1,7 +1,7 @@
 // src/pages/ChannelSettingsPage.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useChannel } from "../hooks/useChannels";
+import { useChannel, deleteChannel } from "../hooks/useChannels";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../firebaseConfig";
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
@@ -57,14 +57,25 @@ export default function ChannelSettingsPage() {
     fetchMembers();
   };
 
+  const handleDeleteRoom = async () => {
+    if(!window.confirm("Are you SURE you want to delete this room? This action cannot be undone.")) return;
+    try {
+      await deleteChannel(channelId);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete room.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fff9e9] pt-8 px-4">
       <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl">
-        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-6">Channel Settings</h1>
+        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-6">Room Settings</h1>
         
         <div className="space-y-4 mb-8">
           <div>
-            <label className="text-xs font-bold text-slate-500 block mb-1">Channel Name</label>
+            <label className="text-xs font-bold text-slate-500 block mb-1">Room Name</label>
             <input value={name} onChange={e=>setName(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none" />
           </div>
           <div>
@@ -73,7 +84,7 @@ export default function ChannelSettingsPage() {
           </div>
           <div className="flex items-center gap-2 mt-4">
             <input type="checkbox" id="priv2" checked={isPriv} onChange={e=>setIsPriv(e.target.checked)} className="w-4 h-4" />
-            <label htmlFor="priv2" className="text-sm font-bold text-slate-600">Private Channel</label>
+            <label htmlFor="priv2" className="text-sm font-bold text-slate-600">Private Room</label>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={handleSave} className="px-6 py-3 bg-pink-600 text-white font-bold rounded-xl shadow hover:bg-pink-700">Save Changes</button>
@@ -100,6 +111,13 @@ export default function ChannelSettingsPage() {
             </div>
           ))}
           {members.length === 0 && <p className="text-slate-500 text-sm">No members yet.</p>}
+        </div>
+
+        <div className="mt-12 pt-6 border-t border-red-100">
+          <h2 className="text-lg font-bold text-red-600 mb-2">Danger Zone</h2>
+          <button onClick={handleDeleteRoom} className="px-6 py-3 w-full bg-red-100 text-red-700 font-bold rounded-xl shadow hover:bg-red-200 transition">
+            Delete Room
+          </button>
         </div>
       </div>
     </div>

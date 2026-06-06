@@ -132,3 +132,15 @@ export async function joinChannel(channelId, userId, isPrivate, forceApprove = f
   
   await setDoc(memberRef, payload);
 }
+
+// Leave a channel
+export async function leaveChannel(channelId, userId) {
+  const memberRef = doc(db, "channel_members", `${channelId}_${userId}`);
+  await deleteDoc(memberRef);
+}
+
+// Delete a channel
+export async function deleteChannel(channelId) {
+  await deleteDoc(doc(db, "channels", channelId));
+  // Note: in production, a Cloud Function should delete all subcollections/confessions and members.
+}

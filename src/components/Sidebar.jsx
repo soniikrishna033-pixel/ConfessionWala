@@ -45,14 +45,14 @@ export default function Sidebar() {
       </Link>
 
       <div className="mb-2 px-3 text-xs font-extrabold tracking-wider text-slate-400 uppercase">
-        My Joined Channels
+        My Joined Rooms
       </div>
 
       <div className="flex-1 space-y-1">
         {loading ? (
           <div className="px-3 text-sm text-slate-400">Loading...</div>
         ) : myChannels.length === 0 ? (
-          <div className="px-3 text-sm text-slate-400">No channels joined.</div>
+          <div className="px-3 text-sm text-slate-400">No rooms joined.</div>
         ) : (
           myChannels.map(c => {
             const isActive = location.pathname === `/c/${c.id}`;

@@ -157,7 +157,7 @@ export default function AdminPage() {
   }, [isAdmin, activeTab]);
 
   const handleDeleteChannel = async (id) => {
-    if (window.confirm("Delete this channel forever?")) {
+    if (window.confirm("Delete this room forever?")) {
       await deleteDoc(doc(db, "channels", id));
       setChannels(c => c.filter(x => x.id !== id));
     }
@@ -229,7 +229,7 @@ export default function AdminPage() {
         {/* Main Tabs */}
         <div className="flex gap-4 mb-6 border-b border-pink-200 pb-2">
           <button onClick={() => setActiveTab("confessions")} className={`font-bold transition ${activeTab === 'confessions' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-slate-400'}`}>Confessions</button>
-          <button onClick={() => setActiveTab("channels")} className={`font-bold transition ${activeTab === 'channels' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-slate-400'}`}>Channels</button>
+          <button onClick={() => setActiveTab("channels")} className={`font-bold transition ${activeTab === 'channels' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-slate-400'}`}>Rooms</button>
         </div>
 
         {activeTab === "confessions" ? (
@@ -341,7 +341,7 @@ export default function AdminPage() {
                 </div>
               </div>
             )})}
-            {channels.length === 0 && <div className="text-center py-20 opacity-50 font-bold">No channels found.</div>}
+            {channels.length === 0 && <div className="text-center py-20 opacity-50 font-bold">No rooms found.</div>}
           </div>
         )}
       </div>
@@ -405,7 +405,7 @@ export default function AdminPage() {
                 <img src={selectedChannelDetails.pfpUrl} alt="" className="w-16 h-16 rounded-full object-cover bg-white" />
                 <div>
                   <h2 className="text-2xl font-extrabold text-[#3f0009]">{selectedChannelDetails.name}</h2>
-                  <p className="text-sm font-semibold text-slate-500">{selectedChannelDetails.isPrivate ? "Private Channel" : "Public Channel"}</p>
+                  <p className="text-sm font-semibold text-slate-500">{selectedChannelDetails.isPrivate ? "Private Room" : "Public Room"}</p>
                 </div>
               </div>
               

@@ -50,8 +50,8 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fff9e9] relative">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="h-screen overflow-hidden flex flex-col bg-[#fff9e9] relative">
+      <div className="absolute inset-0 pointer-events-none">
         <motion.div
           className="absolute -top-40 -left-20 w-[550px] h-[550px] rounded-full bg-pink-200 opacity-30 blur-3xl will-change-transform"
           animate={{ x: [0, 20, 0], y: [0, -15, 0] }}
@@ -59,9 +59,9 @@ export default function FeedPage() {
         />
       </div>
 
-      <div className="px-4 pt-10 max-w-2xl mx-auto relative z-10">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-extrabold text-[#3f0009]">Channels</h1>
+      <div className="px-4 pt-10 max-w-2xl mx-auto relative z-10 flex flex-col h-full w-full">
+        <div className="flex justify-between items-center mb-8 shrink-0">
+          <h1 className="text-3xl font-extrabold text-[#3f0009]">Rooms</h1>
           {currentUser && (
             <button 
               onClick={() => setShowCreateModal(true)}
@@ -73,23 +73,23 @@ export default function FeedPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-6 shrink-0">
           <input 
             type="text" 
-            placeholder="Search channels..." 
+            placeholder="Search rooms..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full p-4 bg-white/60 backdrop-blur-md border border-white rounded-2xl outline-none focus:ring-2 focus:ring-pink-300 shadow-sm font-semibold text-slate-700"
           />
         </div>
 
-        {/* Channel List */}
-        <div className="space-y-4">
+        {/* Room List */}
+        <div className="space-y-4 overflow-y-auto flex-1 pb-24 pr-1">
           {searchQuery.trim() === "" ? (
-            /* Show My Channels Default View (WhatsApp Style) */
+            /* Show My Rooms Default View (WhatsApp Style) */
             <>
               {myChannels.length === 0 ? (
-                <div className="text-center text-slate-500 py-10 font-bold">You haven't joined any channels yet.<br/><span className="text-sm font-normal">Use the search bar above to explore public channels.</span></div>
+                <div className="text-center text-slate-500 py-10 font-bold">You haven't joined any rooms yet.<br/><span className="text-sm font-normal">Use the search bar above to explore public rooms.</span></div>
               ) : (
                 myChannels.map(c => (
                   <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center gap-4 shadow-sm hover:shadow-md transition">
@@ -125,7 +125,7 @@ export default function FeedPage() {
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
                             {c.name}
-                            {c.isPrivate && <span title="Private Channel" className="text-xs">🔒</span>}
+                            {c.isPrivate && <span title="Private Room" className="text-xs">🔒</span>}
                           </h3>
                           <p className="text-xs text-slate-500">{c.description || "No description"}</p>
                         </div>
@@ -145,7 +145,7 @@ export default function FeedPage() {
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
                             {c.name}
-                            {c.isPrivate && <span title="Private Channel" className="text-xs">🔒</span>}
+                            {c.isPrivate && <span title="Private Room" className="text-xs">🔒</span>}
                           </h3>
                           <p className="text-xs text-slate-500">{c.description || "No description"}</p>
                         </div>
@@ -156,7 +156,7 @@ export default function FeedPage() {
 
                   {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && 
                    myChannels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
-                     <div className="text-slate-500 font-bold text-center py-10">No channels match your search.</div>
+                     <div className="text-slate-500 font-bold text-center py-10">No rooms match your search.</div>
                   )}
                 </>
               )}
@@ -169,15 +169,15 @@ export default function FeedPage() {
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-[#3f0009]">Create Channel</h2>
+            <h2 className="text-xl font-bold mb-4 text-[#3f0009]">Create Room</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Channel Name</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1">Room Name</label>
                 <input required value={newChanName} onChange={e=>setNewChanName(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="e.g. DU Confessions" />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1">Description</label>
-                <textarea value={newChanDesc} onChange={e=>setNewChanDesc(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200 resize-none h-20" placeholder="What is this channel about?" />
+                <textarea value={newChanDesc} onChange={e=>setNewChanDesc(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200 resize-none h-20" placeholder="What is this room about?" />
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="priv" checked={isPrivate} onChange={e=>setIsPrivate(e.target.checked)} className="w-4 h-4 text-pink-600" />

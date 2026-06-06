@@ -153,16 +153,16 @@ export default function Navbar() {
                   Home
                 </Link>
 
-                <div className="mt-4 mb-2 px-4 text-xs font-extrabold tracking-wider text-slate-400 uppercase">
-                  My Channels
-                </div>
-
-                {channelsLoading ? (
-                  <div className="px-4 text-sm text-slate-400">Loading...</div>
-                ) : myChannels.length === 0 ? (
-                  <div className="px-4 text-sm text-slate-400">No channels joined.</div>
-                ) : (
-                  myChannels.map(c => {
+                <span className="font-bold text-[#3f0009] px-2 uppercase tracking-widest text-xs">
+                  My Rooms
+                </span>
+                <div className="flex flex-col gap-1 mt-2">
+                  {channelsLoading ? (
+                    <span className="text-sm text-slate-500 px-2 font-medium">Loading...</span>
+                  ) : myChannels.length === 0 ? (
+                    <span className="text-sm text-slate-500 px-2 font-medium">No rooms joined.</span>
+                  ) : (
+                    myChannels.map(c => {
                     const isActive = location.pathname === `/c/${c.id}`;
                     return (
                       <Link 
@@ -177,6 +177,7 @@ export default function Navbar() {
                     )
                   })
                 )}
+                </div>
 
                 {isAdmin && (
                   <Link

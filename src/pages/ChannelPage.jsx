@@ -1,8 +1,8 @@
 // src/pages/ChannelPage.jsx
 import React, { useState } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useChannel, joinChannel } from "../hooks/useChannels";
+import { useChannel, joinChannel, leaveChannel, useMyChannels } from "../hooks/useChannels";
 import { useChannelConfessions } from "../hooks/useConfessions";
 import ConfessionCard from "../components/ConfessionCard";
 import ComposeModal from "../components/ComposeModal";
@@ -18,6 +18,8 @@ export default function ChannelPage() {
   const [copied, setCopied] = useState(false);
   const [searchParams] = useSearchParams();
   const [joining, setJoining] = useState(false);
+  const { myChannels } = useMyChannels();
+  const navigate = useNavigate();
 
   const inviteCode = searchParams.get("inviteCode");
   const inviteName = searchParams.get("name");
@@ -42,8 +44,19 @@ export default function ChannelPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleLeave = async () => {
+    if (!window.confirm("Are you sure you want to leave this room?")) return;
+    try {
+      await leaveChannel(channelId, currentUser.uid);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to leave room.");
+    }
+  };
+
   if (channelLoading) {
-    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-pink-600">Loading channel...</div>;
+    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-pink-600">Loading room...</div>;
   }
 
   if (!channel) {
@@ -51,8 +64,8 @@ export default function ChannelPage() {
       return (
         <div className="min-h-screen bg-[#fff9e9] flex flex-col items-center justify-center p-4">
           <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-8 max-w-sm w-full text-center">
-            <h1 className="text-2xl font-extrabold text-[#3f0009] mb-2">{inviteName || "Private Channel"}</h1>
-            <p className="text-slate-500 text-sm mb-6">This channel requires approval to join.</p>
+            <h1 className="text-2xl font-extrabold text-[#3f0009] mb-2">{inviteName || "Private Room"}</h1>
+            <p className="text-slate-500 text-sm mb-6">This room requires approval to join.</p>
             {currentUser ? (
               <button 
                 onClick={handleRequestJoin}
@@ -70,10 +83,11 @@ export default function ChannelPage() {
         </div>
       );
     }
-    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-slate-600">Channel not found or private.</div>;
+    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-slate-600">Room not found or private.</div>;
   }
 
   const isOwner = currentUser?.uid === channel.ownerId;
+  const isMember = myChannels.some(c => c.id === channelId);
 
   return (
     <div className="min-h-screen bg-[#fff9e9] relative">
@@ -107,11 +121,15 @@ export default function ChannelPage() {
           >
             {copied ? "Copied!" : "Copy Invite Link"}
           </button>
-          {isOwner && (
+          {isOwner ? (
             <Link to={`/c/${channelId}/settings`} className="px-4 py-2 bg-slate-800 text-white rounded-full text-sm font-bold shadow hover:bg-slate-700 transition">
               Settings
             </Link>
-          )}
+          ) : isMember ? (
+            <button onClick={handleLeave} className="px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow hover:bg-red-200 transition">
+              Leave Room
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -120,7 +138,7 @@ export default function ChannelPage() {
         {confLoading ? (
           <div className="text-center text-slate-500 font-bold">Loading confessions...</div>
         ) : confessions.length === 0 ? (
-          <div className="text-center text-slate-500 mt-10">No confessions in this channel yet.</div>
+          <div className="text-center text-slate-500 mt-10">No confessions in this room yet.</div>
         ) : (
           confessions.map((confession, i) => (
             <React.Fragment key={confession.id}>
