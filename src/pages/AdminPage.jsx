@@ -252,7 +252,7 @@ export default function AdminPage() {
 
             {/* Confessions List */}
             <div className="space-y-4">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {filtered.map((confession, i) => {
               // CLIENT-SIDE JOIN: Map the confession's UID to the user dictionary
               const author = users[confession.userId] || { displayName: "Anonymous", email: "No Email Linked", photoURL: "" };
