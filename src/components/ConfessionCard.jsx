@@ -189,10 +189,10 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
       whileInView="visible"
       viewport={{ once: true, margin: "0px 0px -40px 0px" }}
       whileHover={{ y: -2 }}
-      className="relative rounded-2xl backdrop-blur-md bg-white/40 border border-white/60 shadow-lg overflow-hidden will-change-transform"
+      className={`relative rounded-2xl backdrop-blur-md bg-white/40 border border-white/60 shadow-lg will-change-transform ${isMenuOpen ? 'z-40' : 'z-10'}`}
     >
       {/* Subtle top accent line */}
-      <div className="h-[2px] bg-pink-600/30" />
+      <div className="h-[2px] bg-pink-600/30 rounded-t-2xl" />
 
       <div className="p-5">
         {/* Meta row */}
