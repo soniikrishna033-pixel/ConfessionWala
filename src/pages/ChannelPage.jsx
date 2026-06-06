@@ -1,6 +1,6 @@
 // src/pages/ChannelPage.jsx
 import React, { useState } from "react";
-import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useChannel, joinChannel, leaveChannel, useMyChannels } from "../hooks/useChannels";
 import { useChannelConfessions } from "../hooks/useConfessions";
@@ -19,6 +19,7 @@ export default function ChannelPage() {
   const [joining, setJoining] = useState(false);
   const { myChannels } = useMyChannels();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const inviteCode = searchParams.get("inviteCode");
   const inviteName = searchParams.get("name");
@@ -74,7 +75,7 @@ export default function ChannelPage() {
                 {joining ? "Processing..." : "Request to Join"}
               </button>
             ) : (
-              <Link to="/login" className="block w-full py-3.5 rounded-xl bg-[#3f0009] text-white font-bold shadow-lg hover:bg-pink-900 transition">
+              <Link to="/login" state={{ returnTo: location.pathname + location.search }} className="block w-full py-3.5 rounded-xl bg-[#3f0009] text-white font-bold shadow-lg hover:bg-pink-900 transition">
                 Log In to Request
               </Link>
             )}
@@ -187,7 +188,7 @@ export default function ChannelPage() {
           </svg>
         </motion.button>
       ) : (
-        <Link to="/login">
+        <Link to="/login" state={{ returnTo: location.pathname + location.search }}>
           <div className="fixed bottom-6 right-6 z-40 px-6 py-4 rounded-2xl bg-[#3f0009] text-white flex items-center justify-center shadow-xl font-bold text-sm">
             Log in to confess
           </div>

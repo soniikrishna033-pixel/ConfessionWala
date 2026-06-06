@@ -1,7 +1,7 @@
 // src/pages/LoginPage.jsx
 // Glassmorphic auth page with "Sign in with Google" button.
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
@@ -38,17 +38,19 @@ function FloatingOrbs() {
 export default function LoginPage() {
   const { currentUser, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.returnTo || "/";
 
   useEffect(() => {
     if (currentUser) {
-      navigate("/", { replace: true });
+      navigate(returnTo, { replace: true });
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, returnTo]);
 
   async function handleGoogleLogin() {
     try {
       await loginWithGoogle();
-      navigate("/", { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (err) {
       console.error("Login error:", err);
     }

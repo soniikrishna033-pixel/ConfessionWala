@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { toggleLike, reportConfession, addReply, deleteReply, updateConfessionStatus, hardDeleteConfession } from "../hooks/useConfessions";
 import { generateShareImageBlob } from "../utils/generateImage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ReportModal from "./ReportModal";
 import { db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
@@ -39,6 +39,7 @@ const cardVariants = {
 export default function ConfessionCard({ confession, index, dynamicNum, isChannelOwner }) {
   const { currentUser, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showReplies, setShowReplies] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [reported, setReported] = useState(false);
@@ -88,12 +89,12 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
   const requireAuth = useCallback(
     () => {
       if (!currentUser) {
-        navigate("/login");
+        navigate("/login", { state: { returnTo: location.pathname + location.search } });
         return false;
       }
       return true;
     },
-    [currentUser, navigate]
+    [currentUser, navigate, location]
   );
 
   async function handleLike() {
