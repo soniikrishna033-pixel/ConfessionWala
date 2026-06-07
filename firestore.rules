@@ -17,7 +17,7 @@ service cloud.firestore {
       allow read: if resource.data.isPrivate == false || 
                      (request.auth != null && get(/databases/$(database)/documents/channel_members/$(channelId + "_" + request.auth.uid)).data.status == "approved") ||
                      (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
-      allow create: if request.auth != null;
+      allow create: if request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
       allow update, delete: if request.auth != null && 
                             (request.auth.uid == resource.data.ownerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
     }

@@ -3,7 +3,7 @@
 // and fetch user document to check for admin role.
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut, signInAnonymously, linkWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, googleProvider, db } from "../firebaseConfig";
 
@@ -34,9 +34,9 @@ export function AuthProvider({ children }) {
       // First login — provision user document
       const newProfile = {
         uid: user.uid,
-        displayName: user.displayName || "",
-        email: user.email || "",
-        photoURL: user.photoURL || "",
+        displayName: user.isAnonymous ? "Anonymous User" : user.displayName || "",
+        email: user.isAnonymous ? "" : user.email || "",
+        photoURL: user.isAnonymous ? "" : user.photoURL || "",
         role: "user",
         createdAt: serverTimestamp(),
       };
@@ -47,11 +47,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
       if (user) {
+        setCurrentUser(user);
         await fetchOrCreateUserDoc(user);
       } else {
-        setUserProfile(null);
+        try {
+          await signInAnonymously(auth);
+        } catch (error) {
+          console.error("Anonymous auth failed", error);
+          setUserProfile(null);
+        }
       }
       setLoading(false);
     });
@@ -59,8 +64,50 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function loginWithGoogle() {
-    const result = await signInWithPopup(auth, googleProvider);
-    await fetchOrCreateUserDoc(result.user);
+    let result;
+    const wasAnonymous = auth.currentUser?.isAnonymous;
+    if (auth.currentUser && auth.currentUser.isAnonymous) {
+      try {
+        result = await linkWithPopup(auth.currentUser, googleProvider);
+      } catch (err) {
+        if (err.code === 'auth/credential-already-in-use') {
+          result = await signInWithPopup(auth, googleProvider);
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      result = await signInWithPopup(auth, googleProvider);
+    }
+
+    const user = result.user;
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      if (wasAnonymous && !user.isAnonymous) {
+        await setDoc(userRef, {
+          displayName: user.displayName || "",
+          email: user.email || "",
+          photoURL: user.photoURL || ""
+        }, { merge: true });
+        const updatedSnap = await getDoc(userRef);
+        setUserProfile({ id: updatedSnap.id, ...updatedSnap.data() });
+      } else {
+        setUserProfile({ id: userSnap.id, ...userSnap.data() });
+      }
+    } else {
+      const newProfile = {
+        uid: user.uid,
+        displayName: user.displayName || "",
+        email: user.email || "",
+        photoURL: user.photoURL || "",
+        role: "user",
+        createdAt: serverTimestamp(),
+      };
+      await setDoc(userRef, newProfile);
+      setUserProfile({ id: user.uid, ...newProfile });
+    }
     return result;
   }
 

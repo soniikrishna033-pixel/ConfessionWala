@@ -19,6 +19,14 @@ export default function FeedPage() {
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
 
+  const handleCreateClick = () => {
+    if (currentUser?.isAnonymous) {
+      navigate("/login");
+    } else {
+      setShowCreateModal(true);
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if(!newChanName.trim() || !currentUser) return;
@@ -64,7 +72,7 @@ export default function FeedPage() {
           <h1 className="text-3xl font-extrabold text-[#3f0009]">Rooms</h1>
           {currentUser && (
             <button 
-              onClick={() => setShowCreateModal(true)}
+              onClick={handleCreateClick}
               className="px-4 py-2 bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-700 transition"
             >
               + Create

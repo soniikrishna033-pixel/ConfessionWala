@@ -125,7 +125,7 @@ export default function Navbar() {
               </div>
 
               {/* User Profile Card */}
-              {currentUser && (
+              {currentUser && !currentUser.isAnonymous && (
                 <div className="px-6 pb-6 mb-2 border-b border-pink-200/50 flex items-center gap-4">
                   <img
                     src={currentUser.photoURL || ""}
@@ -191,7 +191,7 @@ export default function Navbar() {
 
                 {/* Auth Action directly under links */}
                 <div className="mt-8 pt-4 border-t border-pink-200/50">
-                  {currentUser ? (
+                  {currentUser && !currentUser.isAnonymous ? (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={handleLogout}
