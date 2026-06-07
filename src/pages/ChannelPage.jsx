@@ -13,6 +13,7 @@ export default function ChannelPage() {
   const { channel, loading: channelLoading } = useChannel(channelId);
   const { confessions, loading: confLoading } = useChannelConfessions(channelId);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { currentUser } = useAuth();
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to completely delete this room?")) return;
@@ -64,14 +65,21 @@ export default function ChannelPage() {
           <button 
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              alert("Room link copied to clipboard!");
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
             }} 
             className="px-4 py-2 bg-white text-pink-600 rounded-full text-sm font-bold shadow-sm border border-pink-200 hover:bg-pink-50 transition flex items-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-            </svg>
-            Share Link
+            {copied ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+            )}
+            {copied ? "Copied!" : "Share Link"}
           </button>
           {isOwner && (
             <button onClick={handleDelete} className="px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow hover:bg-red-200 transition">

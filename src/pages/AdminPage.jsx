@@ -8,11 +8,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import {
-  useAllConfessions,
   useAllUsers,
-  updateConfessionStatus,
-  hardDeleteConfession,
-  dismissReports,
 } from "../hooks/useConfessions";
 import { db } from "../firebaseConfig";
 import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
@@ -33,127 +29,26 @@ function timeAgo(date) {
   return `${days}d ago`;
 }
 
-// AdminActionMenu Component
-function AdminActionMenu({ confession, author, onViewDetails, isOpen, onToggle }) {
-  const menuRef = useRef();
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (isOpen && menuRef.current && !menuRef.current.contains(event.target)) {
-        onToggle(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onToggle]);
-
-  async function handleHide() {
-    await updateConfessionStatus(confession.id, "hidden");
-    onToggle(false);
-  }
-
-  async function handleUnhide() {
-    await updateConfessionStatus(confession.id, "approved");
-    onToggle(false);
-  }
-
-  async function handleDelete() {
-    await hardDeleteConfession(confession.id);
-    onToggle(false);
-  }
-
-  return (
-    <div className="relative" ref={menuRef}>
-      <button 
-        onClick={() => onToggle(!isOpen)}
-        className="p-2 rounded-full hover:bg-[#3f0009]/10 transition-colors text-[#3f0009]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-        </svg>
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white/90 backdrop-blur-xl border border-white/60 shadow-xl z-50 overflow-hidden flex flex-col"
-          >
-            <button
-              onClick={() => {
-                onViewDetails(author);
-                onToggle(false);
-              }}
-              className="px-4 py-3.5 text-sm font-semibold text-[#3f0009] text-left hover:bg-pink-100/50 transition-colors border-b border-pink-100/50"
-            >
-              View Writer Details
-            </button>
-            {confession.reports > 0 && (
-              <button
-                onClick={async () => {
-                  await dismissReports(confession.id);
-                  onToggle(false);
-                }}
-                className="px-4 py-3.5 text-sm font-semibold text-emerald-600 text-left hover:bg-emerald-50 transition-colors border-b border-pink-100/50"
-              >
-                Dismiss Reports
-              </button>
-            )}
-            {confession.status !== "hidden" && (
-              <button
-                onClick={handleHide}
-                className="px-4 py-3.5 text-sm font-semibold text-amber-700 text-left hover:bg-amber-50 transition-colors border-b border-pink-100/50"
-              >
-                Hide Confession
-              </button>
-            )}
-            {confession.status === "hidden" && (
-              <button
-                onClick={handleUnhide}
-                className="px-4 py-3.5 text-sm font-semibold text-emerald-600 text-left hover:bg-emerald-50 transition-colors border-b border-pink-100/50"
-              >
-                Unhide Confession
-              </button>
-            )}
-            <button
-              onClick={handleDelete}
-              className="px-4 py-3.5 text-sm font-bold text-red-600 text-left hover:bg-red-50 transition-colors"
-            >
-              Delete Confession
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 // Main Page Component
 export default function AdminPage() {
   const { isAdmin, loading: authLoading } = useAuth();
-  const { confessions, loading: confLoading } = useAllConfessions();
   const { users, loading: usersLoading } = useAllUsers();
   
-  const [filter, setFilter] = useState("all");
   const [selectedWriter, setSelectedWriter] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  
-  const [activeTab, setActiveTab] = useState("confessions");
   const [channels, setChannels] = useState([]);
   const [selectedChannelDetails, setSelectedChannelDetails] = useState(null);
   const [channelMembers, setChannelMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
   useEffect(() => {
-    if (isAdmin && activeTab === "channels") {
+    if (isAdmin) {
       getDocs(collection(db, "channels")).then(snap => {
         setChannels(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
     }
-  }, [isAdmin, activeTab]);
+  }, [isAdmin]);
 
   const handleDeleteChannel = async (id) => {
     if (window.confirm("Delete this room forever? This will also delete all its confessions.")) {
@@ -193,7 +88,7 @@ export default function AdminPage() {
     );
   }
 
-  if (authLoading || confLoading || usersLoading) {
+  if (authLoading || usersLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fff9e9]">
         <motion.div
@@ -204,12 +99,6 @@ export default function AdminPage() {
       </div>
     );
   }
-
-  const filtered = filter === "all" 
-    ? confessions 
-    : filter === "reported" 
-    ? confessions.filter((c) => c.reports > 0)
-    : confessions.filter((c) => c.status === filter);
 
   return (
     <div className="min-h-screen bg-[#fff9e9] relative font-sans text-[#3f0009]">
@@ -225,101 +114,7 @@ export default function AdminPage() {
           <p className="text-sm font-medium text-slate-500">Moderate content and manage the community safely.</p>
         </motion.div>
 
-        {/* Main Tabs */}
-        <div className="flex gap-4 mb-6 border-b border-pink-200 pb-2">
-          <button onClick={() => setActiveTab("confessions")} className={`font-bold transition ${activeTab === 'confessions' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-slate-400'}`}>Confessions</button>
-          <button onClick={() => setActiveTab("channels")} className={`font-bold transition ${activeTab === 'channels' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-slate-400'}`}>Rooms</button>
-        </div>
-
-        {activeTab === "confessions" ? (
-          <>
-            {/* Filters */}
-            <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar pb-2">
-              {["all", "hidden", "reported"].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold capitalize transition-all shadow-sm ${
-                    filter === f
-                      ? "bg-[#3f0009] text-white shadow-pink-900/20"
-                      : "bg-white/40 backdrop-blur-md text-[#3f0009] border border-white/60 hover:bg-white/60"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-
-            {/* Confessions List */}
-            <div className="space-y-4">
-          <AnimatePresence>
-            {filtered.map((confession, i) => {
-              // CLIENT-SIDE JOIN: Map the confession's UID to the user dictionary
-              const author = users[confession.userId] || { displayName: "Anonymous", email: "No Email Linked", photoURL: "" };
-
-              return (
-                <motion.div
-                  key={confession.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-5 sm:p-6 relative ${openMenuId === confession.id ? 'z-40' : 'z-10'}`}
-                >
-                  <div className="flex justify-between items-start mb-4 gap-4">
-                    <div>
-                      <span className={`inline-block px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-widest mb-2 ${
-                        confession.status === "approved" ? "bg-emerald-100 text-emerald-800" :
-                        confession.status === "hidden" ? "bg-red-100 text-red-800" :
-                        "bg-amber-100 text-amber-800"
-                      }`}>
-                        {confession.status}
-                      </span>
-                      <p className="text-xs font-semibold text-slate-500">{timeAgo(confession.timestamp)}</p>
-                    </div>
-                    
-                    {/* Multi-Feature Admin Actions Menu */}
-                    <AdminActionMenu 
-                      confession={confession} 
-                      author={author} 
-                      onViewDetails={setSelectedWriter} 
-                      isOpen={openMenuId === confession.id}
-                      onToggle={(isOpen) => setOpenMenuId(isOpen ? confession.id : null)}
-                    />
-                  </div>
-
-                  <p className="text-base font-medium leading-relaxed whitespace-pre-wrap mb-5">
-                    {confession.content}
-                  </p>
-
-                  <div className="flex gap-5 text-xs font-bold text-slate-500">
-                    <span>👍 {confession.likes || 0} Likes</span>
-                    <span>💬 {confession.replies?.length || 0} Replies</span>
-                    <span className={confession.reports > 0 ? "text-red-500" : ""}>🚨 {confession.reports || 0} Reports</span>
-                  </div>
-
-                  {/* Display Report Reasons if available */}
-                  {confession.reportReasons && confession.reportReasons.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-red-200/50">
-                      <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider self-center mr-1">Reported For:</span>
-                      {confession.reportReasons.map((reason, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded-md border border-red-100">
-                          {reason}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {filtered.length === 0 && (
-            <div className="text-center py-20 opacity-50 font-bold">No confessions found in this filter.</div>
-          )}
-        </div>
-        </>) : (
+        <h2 className="text-xl font-extrabold mb-4">All Rooms</h2>
           <div className="space-y-4">
             {channels.map(c => {
               const owner = users[c.ownerId] || { displayName: "Unknown", email: "" };
@@ -342,7 +137,6 @@ export default function AdminPage() {
             )})}
             {channels.length === 0 && <div className="text-center py-20 opacity-50 font-bold">No rooms found.</div>}
           </div>
-        )}
       </div>
 
       {/* Writer Details Modal */}
