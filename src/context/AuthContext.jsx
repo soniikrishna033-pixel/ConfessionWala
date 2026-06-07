@@ -70,11 +70,11 @@ export function AuthProvider({ children }) {
       try {
         result = await linkWithPopup(auth.currentUser, googleProvider);
       } catch (err) {
-        if (err.code === 'auth/credential-already-in-use') {
-          result = await signInWithPopup(auth, googleProvider);
-        } else {
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
           throw err;
         }
+        console.warn("Link failed, falling back to sign in:", err);
+        result = await signInWithPopup(auth, googleProvider);
       }
     } else {
       result = await signInWithPopup(auth, googleProvider);
