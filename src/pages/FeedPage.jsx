@@ -15,6 +15,7 @@ export default function FeedPage() {
   // Create Channel Form State
   const [newChanName, setNewChanName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isExplore = location.pathname === '/explore';
