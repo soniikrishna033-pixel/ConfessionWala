@@ -1,7 +1,7 @@
 // src/pages/FeedPage.jsx
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePublicChannels, useMyChannels, createChannel, joinChannel } from "../hooks/useChannels";
 
@@ -14,13 +14,17 @@ export default function FeedPage() {
   
   // Create Channel Form State
   const [newChanName, setNewChanName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const isExplore = location.pathname === '/explore';
 
   const handleCreateClick = () => {
     if (currentUser?.isAnonymous) {
       navigate("/login");
     } else {
+      setNewChanName("");
+      setErrorMsg("");
       setShowCreateModal(true);
     }
   };
@@ -29,13 +33,18 @@ export default function FeedPage() {
     e.preventDefault();
     if(!newChanName.trim() || !currentUser) return;
     setIsCreating(true);
+    setErrorMsg("");
     try {
       const id = await createChannel(newChanName, currentUser.uid);
       setShowCreateModal(false);
       navigate(`/c/${id}`);
     } catch (err) {
-      console.error(err);
-      alert("Failed to create channel");
+      if (err.message === "ROOM_EXISTS") {
+        setErrorMsg("This room handle is already taken. Please try another name.");
+      } else {
+        console.error(err);
+        setErrorMsg("Failed to create room.");
+      }
     }
     setIsCreating(false);
   };
@@ -102,7 +111,7 @@ export default function FeedPage() {
 
         {/* Room List */}
         <div className="space-y-4 overflow-y-auto flex-1 pb-24 pr-1">
-          {searchQuery.trim() === "" ? (
+          {searchQuery.trim() === "" && !isExplore ? (
             /* Show My Rooms Default View (WhatsApp Style) */
             <>
               {myChannels.length === 0 ? (
@@ -115,6 +124,7 @@ export default function FeedPage() {
                       <h3 className="font-bold text-slate-800 text-lg truncate flex items-center gap-1">
                         {c.name}
                       </h3>
+                      <p className="text-xs text-slate-500 font-medium">@{c.id}</p>
                     </div>
                     <div className="text-pink-600">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
@@ -141,6 +151,7 @@ export default function FeedPage() {
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
                             {c.name}
                           </h3>
+                          <p className="text-xs text-slate-500 font-medium">@{c.id}</p>
                         </div>
                       </div>
                       <button onClick={() => handleJoin(c.id)} className="px-4 py-2 bg-pink-100 text-pink-700 font-bold rounded-lg text-sm shrink-0">
@@ -196,7 +207,13 @@ export default function FeedPage() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1">Room Name</label>
-                <input required value={newChanName} onChange={e=>setNewChanName(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="e.g. DU Confessions" />
+                <input required value={newChanName} onChange={e=>{setNewChanName(e.target.value); setErrorMsg("")}} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="e.g. DU Confessions" />
+                {newChanName.trim() && (
+                  <p className="text-xs text-slate-400 mt-2 ml-1">
+                    Handle: <span className="font-bold text-pink-600">@{newChanName.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}</span>
+                  </p>
+                )}
+                {errorMsg && <p className="text-xs text-red-500 font-bold mt-2 ml-1">{errorMsg}</p>}
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 p-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">Cancel</button>

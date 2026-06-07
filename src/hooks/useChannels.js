@@ -91,8 +91,16 @@ export function useChannel(channelId) {
 
 // Create a new channel
 export async function createChannel(name, userId) {
-  const channelRef = doc(collection(db, "channels"));
-  const channelId = channelRef.id;
+  // Normalize the name to create an Instagram-style handle
+  const channelId = name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  if (!channelId) throw new Error("Invalid room name.");
+
+  const channelRef = doc(db, "channels", channelId);
+  const docSnap = await getDoc(channelRef);
+  
+  if (docSnap.exists()) {
+    throw new Error("ROOM_EXISTS");
+  }
   
   await setDoc(channelRef, {
     name,

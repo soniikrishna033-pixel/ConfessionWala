@@ -151,6 +151,17 @@ export default function Navbar() {
                   Home
                 </Link>
 
+                <Link
+                  to="/explore"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl text-base font-semibold transition-colors border-b border-transparent ${location.pathname === '/explore' ? 'bg-pink-100/50 text-pink-700' : 'text-[#3f0009] hover:bg-pink-50'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                  Explore Rooms
+                </Link>
+
 
 
                 {isAdmin && (

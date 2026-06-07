@@ -27,6 +27,7 @@ export default function App() {
             <main className="flex-1 md:pl-64 min-w-0">
               <Routes>
                 <Route path="/" element={<FeedPage />} />
+                <Route path="/explore" element={<FeedPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/c/:channelId" element={<ChannelPage />} />
                 <Route path="/admin" element={<AdminPage />} />
