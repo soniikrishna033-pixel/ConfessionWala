@@ -44,17 +44,6 @@ export default function Sidebar() {
         </Link>
       )}
 
-      {/* Banner Ad */}
-      <div className="mt-8 flex justify-center w-full min-h-[250px]">
-        <iframe
-          title="Sidebar Ad"
-          src="/ad-banner.html"
-          width="300"
-          height="250"
-          style={{ border: "none", overflow: "hidden" }}
-          scrolling="no"
-        />
-      </div>
     </div>
   );
 }

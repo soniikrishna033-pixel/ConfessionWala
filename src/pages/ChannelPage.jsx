@@ -69,17 +69,6 @@ export default function ChannelPage() {
         </div>
       </div>
 
-      {/* Navigate Bar Ad */}
-      <div className="max-w-2xl mx-auto px-4 w-full flex justify-center mb-2 relative z-10">
-        <iframe 
-          title="Nav Ad"
-          src="/ad-nav.html"
-          width="100%"
-          height="60"
-          style={{ border: "none", overflow: "hidden" }}
-          scrolling="no"
-        />
-      </div>
 
       {/* Feed */}
       <div className="px-4 pb-28 max-w-2xl mx-auto space-y-4 relative z-10 mt-6">
@@ -100,17 +89,6 @@ export default function ChannelPage() {
           ))
         )}
 
-        {/* Mobile Banner Ad at bottom of feed */}
-        <div className="md:hidden w-full flex justify-center mt-8 pt-4 border-t border-pink-200/50">
-          <iframe 
-            title="Mobile Banner Ad"
-            src="/ad-banner.html"
-            width="300"
-            height="250"
-            style={{ border: "none", overflow: "hidden" }}
-            scrolling="no"
-          />
-        </div>
       </div>
 
       {currentUser ? (

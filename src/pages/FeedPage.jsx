@@ -97,17 +97,6 @@ export default function FeedPage() {
           />
         </div>
 
-        {/* Navigate Bar Ad */}
-        <div className="w-full flex justify-center mb-4 shrink-0">
-          <iframe 
-            title="Nav Ad"
-            src="/ad-nav.html"
-            width="100%"
-            height="60"
-            style={{ border: "none", overflow: "hidden" }}
-            scrolling="no"
-          />
-        </div>
 
         {/* Room List */}
         <div className="space-y-4 overflow-y-auto flex-1 pb-24 pr-1">
@@ -185,17 +174,6 @@ export default function FeedPage() {
             </>
           )}
 
-          {/* Mobile Banner Ad at bottom of feed */}
-          <div className="md:hidden w-full flex justify-center mt-8 pb-4">
-            <iframe 
-              title="Mobile Banner Ad"
-              src="/ad-banner.html"
-              width="300"
-              height="250"
-              style={{ border: "none", overflow: "hidden" }}
-              scrolling="no"
-            />
-          </div>
         </div>
       </div>
 
