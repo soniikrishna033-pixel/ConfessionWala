@@ -60,7 +60,19 @@ export default function ChannelPage() {
         <h1 className="text-2xl font-extrabold text-[#3f0009] mb-1">{channel.name}</h1>
         <p className="text-sm font-bold text-slate-500 mb-4">@{channel.id}</p>
         
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-2">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Room link copied to clipboard!");
+            }} 
+            className="px-4 py-2 bg-white text-pink-600 rounded-full text-sm font-bold shadow-sm border border-pink-200 hover:bg-pink-50 transition flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+            Share Link
+          </button>
           {isOwner && (
             <button onClick={handleDelete} className="px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow hover:bg-red-200 transition">
               Delete Room
