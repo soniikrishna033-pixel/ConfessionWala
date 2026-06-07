@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { useMyChannels } from "../hooks/useChannels";
 
 function TypewriterLogo() {
   const [text, setText] = useState("");
@@ -55,7 +54,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { myChannels, loading: channelsLoading } = useMyChannels();
 
   async function handleLogout() {
     await logout();
@@ -153,31 +151,7 @@ export default function Navbar() {
                   Home
                 </Link>
 
-                <span className="font-bold text-[#3f0009] px-2 uppercase tracking-widest text-xs">
-                  My Rooms
-                </span>
-                <div className="flex flex-col gap-1 mt-2">
-                  {channelsLoading ? (
-                    <span className="text-sm text-slate-500 px-2 font-medium">Loading...</span>
-                  ) : myChannels.length === 0 ? (
-                    <span className="text-sm text-slate-500 px-2 font-medium">No rooms joined.</span>
-                  ) : (
-                    myChannels.map(c => {
-                    const isActive = location.pathname === `/c/${c.id}`;
-                    return (
-                      <Link 
-                        key={c.id} 
-                        to={`/c/${c.id}`} 
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition ${isActive ? 'bg-pink-600 text-white shadow-md' : 'text-slate-700 hover:bg-pink-50'}`}
-                      >
-                        <img src={c.pfpUrl} alt="" className="w-8 h-8 rounded-full object-cover bg-white" />
-                        <span className="font-bold text-base truncate">{c.name}</span>
-                      </Link>
-                    )
-                  })
-                )}
-                </div>
+
 
                 {isAdmin && (
                   <Link

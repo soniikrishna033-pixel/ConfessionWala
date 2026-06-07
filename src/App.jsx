@@ -15,7 +15,6 @@ import PrivacyPage from "./pages/PrivacyPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import ChannelPage from "./pages/ChannelPage";
-import ChannelSettingsPage from "./pages/ChannelSettingsPage";
 
 export default function App() {
   return (
@@ -30,7 +29,6 @@ export default function App() {
                 <Route path="/" element={<FeedPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/c/:channelId" element={<ChannelPage />} />
-                <Route path="/c/:channelId/settings" element={<ChannelSettingsPage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />

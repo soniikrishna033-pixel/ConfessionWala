@@ -1,12 +1,10 @@
 // src/components/Sidebar.jsx
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useMyChannels } from "../hooks/useChannels";
 import { useEffect, useRef } from "react";
 
 export default function Sidebar() {
   const { currentUser, isAdmin } = useAuth();
-  const { myChannels, loading } = useMyChannels();
   const location = useLocation();
   if (!currentUser) return null;
 
@@ -22,31 +20,7 @@ export default function Sidebar() {
         Home
       </Link>
 
-      <div className="mb-2 px-3 text-xs font-extrabold tracking-wider text-slate-400 uppercase">
-        My Joined Rooms
-      </div>
 
-      <div className="flex-1 space-y-1">
-        {loading ? (
-          <div className="px-3 text-sm text-slate-400">Loading...</div>
-        ) : myChannels.length === 0 ? (
-          <div className="px-3 text-sm text-slate-400">No rooms joined.</div>
-        ) : (
-          myChannels.map(c => {
-            const isActive = location.pathname === `/c/${c.id}`;
-            return (
-              <Link 
-                key={c.id} 
-                to={`/c/${c.id}`} 
-                className={`flex items-center gap-3 p-2 rounded-xl transition ${isActive ? 'bg-pink-600 text-white shadow-md' : 'text-slate-700 hover:bg-white'}`}
-              >
-                <img src={c.pfpUrl} alt="" className="w-8 h-8 rounded-full object-cover bg-white" />
-                <span className="font-bold text-sm truncate">{c.name}</span>
-              </Link>
-            )
-          })
-        )}
-      </div>
 
       {isAdmin && (
         <Link 

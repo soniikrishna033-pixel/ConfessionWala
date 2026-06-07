@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useChannel, joinChannel, leaveChannel, useMyChannels } from "../hooks/useChannels";
+import { useChannel, deleteChannel } from "../hooks/useChannels";
 import { useChannelConfessions } from "../hooks/useConfessions";
 import ConfessionCard from "../components/ConfessionCard";
 import ComposeModal from "../components/ComposeModal";
@@ -14,44 +14,14 @@ export default function ChannelPage() {
   const { confessions, loading: confLoading } = useChannelConfessions(channelId);
   const [composeOpen, setComposeOpen] = useState(false);
   const { currentUser } = useAuth();
-  const [copied, setCopied] = useState(false);
-  const [searchParams] = useSearchParams();
-  const [joining, setJoining] = useState(false);
-  const { myChannels } = useMyChannels();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const inviteCode = searchParams.get("inviteCode");
-  const inviteName = searchParams.get("name");
-
-  const handleRequestJoin = () => {
-    if (!currentUser) return alert("Please log in first.");
-    setJoining(true);
-    joinChannel(channelId, currentUser.uid, true)
-      .then(() => alert("Request sent! Waiting for admin approval."))
-      .catch(e => {
-        console.error(e);
-        alert("Failed to send request.");
-      })
-      .finally(() => setJoining(false));
-  };
-
-  const copyInvite = () => {
-    let url = window.location.href.split('?')[0];
-    if (channel.inviteCode) url += `?inviteCode=${channel.inviteCode}&name=${encodeURIComponent(channel.name)}`;
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleLeave = async () => {
-    if (!window.confirm("Are you sure you want to leave this room?")) return;
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to completely delete this room?")) return;
     try {
-      await leaveChannel(channelId, currentUser.uid);
+      await deleteChannel(channelId);
       navigate("/");
     } catch (err) {
       console.error(err);
-      alert("Failed to leave room.");
+      alert("Failed to delete room.");
     }
   };
 
@@ -60,34 +30,10 @@ export default function ChannelPage() {
   }
 
   if (!channel) {
-    if (inviteCode) {
-      return (
-        <div className="min-h-screen bg-[#fff9e9] flex flex-col items-center justify-center p-4">
-          <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-8 max-w-sm w-full text-center">
-            <h1 className="text-2xl font-extrabold text-[#3f0009] mb-2">{inviteName || "Private Room"}</h1>
-            <p className="text-slate-500 text-sm mb-6">This room requires approval to join.</p>
-            {currentUser ? (
-              <button 
-                onClick={handleRequestJoin}
-                disabled={joining}
-                className="w-full py-3.5 rounded-xl bg-pink-600 text-white font-bold shadow-lg hover:bg-pink-700 disabled:opacity-50 transition"
-              >
-                {joining ? "Processing..." : "Request to Join"}
-              </button>
-            ) : (
-              <Link to="/login" state={{ returnTo: location.pathname + location.search }} className="block w-full py-3.5 rounded-xl bg-[#3f0009] text-white font-bold shadow-lg hover:bg-pink-900 transition">
-                Log In to Request
-              </Link>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-slate-600">Room not found or private.</div>;
+    return <div className="min-h-screen bg-[#fff9e9] flex items-center justify-center font-bold text-slate-600">Room not found.</div>;
   }
 
   const isOwner = currentUser?.uid === channel.ownerId;
-  const isMember = myChannels.some(c => c.id === channelId);
 
   return (
     <div className="min-h-screen bg-[#fff9e9] relative">
@@ -111,25 +57,14 @@ export default function ChannelPage() {
       {/* Channel Header */}
       <div className="px-4 pt-4 pb-4 max-w-2xl mx-auto relative z-10 flex flex-col items-center">
         <img src={channel.pfpUrl} alt="pfp" className="w-24 h-24 rounded-full shadow-lg border-4 border-white mb-4 object-cover" />
-        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-1">{channel.name}</h1>
-        <p className="text-sm text-slate-600 mb-4 text-center">{channel.description}</p>
+        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-4">{channel.name}</h1>
         
         <div className="flex gap-3">
-          <button 
-            onClick={copyInvite}
-            className="px-4 py-2 bg-white rounded-full text-sm font-bold shadow text-pink-600 hover:bg-pink-50 transition"
-          >
-            {copied ? "Copied!" : "Copy Invite Link"}
-          </button>
-          {isOwner ? (
-            <Link to={`/c/${channelId}/settings`} className="px-4 py-2 bg-slate-800 text-white rounded-full text-sm font-bold shadow hover:bg-slate-700 transition">
-              Settings
-            </Link>
-          ) : isMember ? (
-            <button onClick={handleLeave} className="px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow hover:bg-red-200 transition">
-              Leave Room
+          {isOwner && (
+            <button onClick={handleDelete} className="px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-bold shadow hover:bg-red-200 transition">
+              Delete Room
             </button>
-          ) : null}
+          )}
         </div>
       </div>
 

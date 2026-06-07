@@ -14,8 +14,6 @@ export default function FeedPage() {
   
   // Create Channel Form State
   const [newChanName, setNewChanName] = useState("");
-  const [newChanDesc, setNewChanDesc] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
 
@@ -32,7 +30,7 @@ export default function FeedPage() {
     if(!newChanName.trim() || !currentUser) return;
     setIsCreating(true);
     try {
-      const id = await createChannel(newChanName, newChanDesc, null, isPrivate, currentUser.uid);
+      const id = await createChannel(newChanName, currentUser.uid);
       setShowCreateModal(false);
       navigate(`/c/${id}`);
     } catch (err) {
@@ -42,15 +40,14 @@ export default function FeedPage() {
     setIsCreating(false);
   };
 
-  const handleJoin = async (channelId, isPriv) => {
+  const handleJoin = async (channelId) => {
     if (!currentUser) {
       navigate("/login");
       return;
     }
     try {
-      await joinChannel(channelId, currentUser.uid, isPriv);
-      if(!isPriv) navigate(`/c/${channelId}`);
-      else alert("Requested to join. Waiting for admin approval.");
+      await joinChannel(channelId, currentUser.uid);
+      navigate(`/c/${channelId}`);
     } catch (err) {
       console.error(err);
       alert("Failed to join");
@@ -117,9 +114,7 @@ export default function FeedPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-slate-800 text-lg truncate flex items-center gap-1">
                         {c.name}
-                        {c.isPrivate && <span title="Private Channel" className="text-sm">🔒</span>}
                       </h3>
-                      <p className="text-sm text-slate-500 truncate">{c.description || "No description"}</p>
                     </div>
                     <div className="text-pink-600">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
@@ -137,7 +132,7 @@ export default function FeedPage() {
                 <>
                   {publicChannels
                     .filter(c => !myChannels.find(mc => mc.id === c.id))
-                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase())))
+                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <div key={c.id} className="p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm">
                       <div className="flex items-center gap-4">
@@ -145,19 +140,17 @@ export default function FeedPage() {
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
                             {c.name}
-                            {c.isPrivate && <span title="Private Room" className="text-xs">🔒</span>}
                           </h3>
-                          <p className="text-xs text-slate-500">{c.description || "No description"}</p>
                         </div>
                       </div>
-                      <button onClick={() => handleJoin(c.id, c.isPrivate)} className="px-4 py-2 bg-pink-100 text-pink-700 font-bold rounded-lg text-sm shrink-0">
-                        {c.isPrivate ? "Request" : "Join"}
+                      <button onClick={() => handleJoin(c.id)} className="px-4 py-2 bg-pink-100 text-pink-700 font-bold rounded-lg text-sm shrink-0">
+                        Join
                       </button>
                     </div>
                   ))}
                   
                   {myChannels
-                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase())))
+                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm opacity-70 hover:opacity-100">
                       <div className="flex items-center gap-4">
@@ -165,17 +158,15 @@ export default function FeedPage() {
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
                             {c.name}
-                            {c.isPrivate && <span title="Private Room" className="text-xs">🔒</span>}
                           </h3>
-                          <p className="text-xs text-slate-500">{c.description || "No description"}</p>
                         </div>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Joined</span>
                     </Link>
                   ))}
 
-                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && 
-                   myChannels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && 
+                   myChannels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                      <div className="text-slate-500 font-bold text-center py-10">No rooms match your search.</div>
                   )}
                 </>
@@ -206,14 +197,6 @@ export default function FeedPage() {
               <div>
                 <label className="text-xs font-bold text-slate-500 block mb-1">Room Name</label>
                 <input required value={newChanName} onChange={e=>setNewChanName(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="e.g. DU Confessions" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Description</label>
-                <textarea value={newChanDesc} onChange={e=>setNewChanDesc(e.target.value)} className="w-full p-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-pink-200 resize-none h-20" placeholder="What is this room about?" />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="priv" checked={isPrivate} onChange={e=>setIsPrivate(e.target.checked)} className="w-4 h-4 text-pink-600" />
-                <label htmlFor="priv" className="text-sm font-bold text-slate-600">Make Private (Invite & Approve Only)</label>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 p-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">Cancel</button>

@@ -10,7 +10,7 @@ export function usePublicChannels() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "channels"), where("isPrivate", "==", false));
+    const q = query(collection(db, "channels"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setChannels(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
@@ -90,18 +90,14 @@ export function useChannel(channelId) {
 }
 
 // Create a new channel
-export async function createChannel(name, description, pfpUrl, isPrivate, userId) {
+export async function createChannel(name, userId) {
   const channelRef = doc(collection(db, "channels"));
   const channelId = channelRef.id;
-  const inviteCode = Math.random().toString(36).substring(2, 10);
   
   await setDoc(channelRef, {
     name,
-    description,
-    pfpUrl: pfpUrl || "https://api.dicebear.com/7.x/shapes/svg?seed=" + channelId,
+    pfpUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=" + channelId,
     ownerId: userId,
-    isPrivate,
-    inviteCode,
     createdAt: serverTimestamp()
   });
 
@@ -119,17 +115,15 @@ export async function createChannel(name, description, pfpUrl, isPrivate, userId
 }
 
 // Join a channel
-export async function joinChannel(channelId, userId, isPrivate, forceApprove = false, providedCode = null) {
+export async function joinChannel(channelId, userId) {
   const memberRef = doc(db, "channel_members", `${channelId}_${userId}`);
   const payload = {
     channelId,
     userId,
     role: "member",
-    status: (isPrivate && !forceApprove && !providedCode) ? "pending" : "approved",
+    status: "approved",
     joinedAt: serverTimestamp()
   };
-  if (providedCode) payload.providedCode = providedCode;
-  
   await setDoc(memberRef, payload);
 }
 
