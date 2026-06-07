@@ -3,7 +3,7 @@
 // and fetch user document to check for admin role.
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut, signInAnonymously, linkWithPopup } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut, signInAnonymously, linkWithPopup, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, googleProvider, db } from "../firebaseConfig";
 
@@ -73,8 +73,17 @@ export function AuthProvider({ children }) {
         if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
           throw err;
         }
-        console.warn("Link failed, falling back to sign in:", err);
-        result = await signInWithPopup(auth, googleProvider);
+        
+        // Browsers block a second popup if we try signInWithPopup here.
+        // Instead, extract the credential from the failed link attempt and use it to sign in.
+        const credential = GoogleAuthProvider.credentialFromError(err);
+        if (credential) {
+          console.warn("Link failed (account likely exists). Signing in with credential instead:", err);
+          result = await signInWithCredential(auth, credential);
+        } else {
+          console.error("Link failed and no credential recovered:", err);
+          throw err;
+        }
       }
     } else {
       result = await signInWithPopup(auth, googleProvider);
