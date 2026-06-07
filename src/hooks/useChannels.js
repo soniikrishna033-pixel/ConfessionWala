@@ -10,7 +10,7 @@ export function usePublicChannels() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "channels"));
+    const q = query(collection(db, "channels"), where("isPrivate", "==", false));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setChannels(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);

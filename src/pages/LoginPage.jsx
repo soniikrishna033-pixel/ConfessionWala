@@ -42,7 +42,7 @@ export default function LoginPage() {
   const returnTo = location.state?.returnTo || "/";
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !currentUser.isAnonymous) {
       navigate(returnTo, { replace: true });
     }
   }, [currentUser, navigate, returnTo]);
