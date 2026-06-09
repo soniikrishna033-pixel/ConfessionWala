@@ -128,7 +128,7 @@ export default function FeedPage() {
                 <>
                   {publicChannels
                     .filter(c => !myChannels.find(mc => mc.id === c.id))
-                    .filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter(c => String(c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <div key={c.id} className="p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm">
                       <div className="flex items-center gap-4">
@@ -147,7 +147,7 @@ export default function FeedPage() {
                   ))}
                   
                   {myChannels
-                    .filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter(c => String(c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm opacity-70 hover:opacity-100">
                       <div className="flex items-center gap-4">
@@ -162,8 +162,8 @@ export default function FeedPage() {
                     </Link>
                   ))}
 
-                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && 
-                   myChannels.filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => String(c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && 
+                   myChannels.filter(c => String(c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                      <div className="text-slate-500 font-bold text-center py-10">No rooms match your search.</div>
                   )}
                 </>
