@@ -16,14 +16,12 @@ import PrivacyPage from "./pages/PrivacyPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import ChannelPage from "./pages/ChannelPage";
-import AntiAdBlocker from "./components/AntiAdBlocker";
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <div className="min-h-screen bg-[#FAF9F6] text-slate-800 flex flex-col">
-          <AntiAdBlocker />
           <Navbar />
           <div className="flex flex-1 pt-16">
             <Sidebar />
