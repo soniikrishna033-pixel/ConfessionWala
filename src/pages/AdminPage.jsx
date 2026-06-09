@@ -123,7 +123,7 @@ export default function AdminPage() {
                 <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
                   <img src={c.pfpUrl} alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="font-bold text-slate-800 truncate">{c.name} {c.isPrivate ? "🔒" : ""}</h3>
+                    <h3 className="font-bold text-slate-800 truncate">{c.name || "Untitled Room"} {c.isPrivate ? "🔒" : ""}</h3>
                     <p className="text-xs text-slate-500 truncate">{c.description || "No description"}</p>
                     <p className="text-[10px] text-pink-600 font-bold mt-1 truncate">Owner: {owner.displayName} ({owner.email})</p>
                   </div>
@@ -197,7 +197,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-4 mb-6 border-b border-pink-200 pb-4 shrink-0">
                 <img src={selectedChannelDetails.pfpUrl} alt="" className="w-16 h-16 rounded-full object-cover bg-white" />
                 <div>
-                  <h2 className="text-2xl font-extrabold text-[#3f0009]">{selectedChannelDetails.name}</h2>
+                  <h2 className="text-2xl font-extrabold text-[#3f0009]">{selectedChannelDetails.name || "Untitled Room"}</h2>
                   <p className="text-sm font-semibold text-slate-500">{selectedChannelDetails.isPrivate ? "Private Room" : "Public Room"}</p>
                 </div>
               </div>

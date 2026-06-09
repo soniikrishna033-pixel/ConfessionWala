@@ -112,7 +112,7 @@ export default function FeedPage() {
                     <img src={c.pfpUrl} alt="" className="w-14 h-14 rounded-full object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-slate-800 text-lg truncate flex items-center gap-1">
-                        {c.name}
+                        {c.name || "Untitled Room"}
                       </h3>
                       <p className="text-xs text-slate-500 font-medium">@{c.id}</p>
                     </div>
@@ -132,14 +132,14 @@ export default function FeedPage() {
                 <>
                   {publicChannels
                     .filter(c => !myChannels.find(mc => mc.id === c.id))
-                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <div key={c.id} className="p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm">
                       <div className="flex items-center gap-4">
                         <img src={c.pfpUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
-                            {c.name}
+                            {c.name || "Untitled Room"}
                           </h3>
                           <p className="text-xs text-slate-500 font-medium">@{c.id}</p>
                         </div>
@@ -151,14 +151,14 @@ export default function FeedPage() {
                   ))}
                   
                   {myChannels
-                    .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(c => (
                     <Link key={c.id} to={`/c/${c.id}`} className="block p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white flex items-center justify-between shadow-sm opacity-70 hover:opacity-100">
                       <div className="flex items-center gap-4">
                         <img src={c.pfpUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
                         <div>
                           <h3 className="font-bold text-slate-800 flex items-center gap-1">
-                            {c.name}
+                            {c.name || "Untitled Room"}
                           </h3>
                         </div>
                       </div>
@@ -166,8 +166,8 @@ export default function FeedPage() {
                     </Link>
                   ))}
 
-                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && 
-                   myChannels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                  {publicChannels.filter(c => !myChannels.find(mc => mc.id === c.id)).filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && 
+                   myChannels.filter(c => (c.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                      <div className="text-slate-500 font-bold text-center py-10">No rooms match your search.</div>
                   )}
                 </>

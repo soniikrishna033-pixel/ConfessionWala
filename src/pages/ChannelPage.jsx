@@ -58,7 +58,7 @@ export default function ChannelPage() {
       {/* Channel Header */}
       <div className="px-4 pt-4 pb-4 max-w-2xl mx-auto relative z-10 flex flex-col items-center">
         <img src={channel.pfpUrl} alt="pfp" className="w-24 h-24 rounded-full shadow-lg border-4 border-white mb-4 object-cover" />
-        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-1">{channel.name}</h1>
+        <h1 className="text-2xl font-extrabold text-[#3f0009] mb-1">{channel.name || "Untitled Room"}</h1>
         <p className="text-sm font-bold text-slate-500 mb-4">@{channel.id}</p>
         
         <div className="flex gap-3 mt-2">
