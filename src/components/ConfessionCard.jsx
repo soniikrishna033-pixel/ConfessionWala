@@ -98,24 +98,21 @@ export default function ConfessionCard({ confession, index, dynamicNum, isChanne
   );
 
   async function handleLike() {
-    if (!requireAuth()) return;
-    await toggleLike(confession.id, currentUser.uid, isLiked);
+    await toggleLike(confession.id, currentUser?.uid || "anon_user", isLiked);
   }
 
   function handleOpenReport() {
-    if (!requireAuth()) return;
     if (hasReported || reported) return;
     setIsReportModalOpen(true);
   }
 
   async function handleReply() {
-    if (!requireAuth()) return;
     if (!replyText.trim() || submittingReply) return;
     
     setSubmittingReply(true);
     
     try {
-      await addReply(confession.id, currentUser.uid, replyText.trim());
+      await addReply(confession.id, currentUser?.uid || "anon_user", replyText.trim());
       setReplyText("");
     } catch (error) {
       console.error("Reply failed", error);

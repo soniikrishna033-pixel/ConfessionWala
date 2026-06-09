@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 export default function Sidebar() {
   const { currentUser, isAdmin } = useAuth();
   const location = useLocation();
-  if (!currentUser) return null;
+  // Sidebar should always render so users can see the Explore tab
 
   return (
     <div className="hidden md:flex flex-col w-64 fixed left-0 top-16 bottom-0 bg-white/60 backdrop-blur-md border-r border-white/60 shadow-lg p-4 z-40 overflow-y-auto">

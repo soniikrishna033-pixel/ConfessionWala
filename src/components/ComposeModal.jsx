@@ -33,17 +33,13 @@ export default function ComposeModal({ isOpen, onClose, channelId }) {
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit() {
-    if (!currentUser) {
-      navigate("/login");
-      return;
-    }
     if (!text.trim() || submitting) return;
 
     setSubmitting(true);
     setErrorMsg("");
     
     try {
-      await submitConfession(currentUser.uid, channelId, text.trim(), "general");
+      await submitConfession(currentUser?.uid || "anon_user", channelId, text.trim(), "general");
       setSuccess(true);
       setText("");
       setTimeout(() => {

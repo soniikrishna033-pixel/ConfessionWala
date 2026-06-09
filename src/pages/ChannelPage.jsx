@@ -111,23 +111,15 @@ export default function ChannelPage() {
 
       </div>
 
-      {currentUser ? (
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setComposeOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-pink-600 text-white flex items-center justify-center shadow-xl hover:bg-pink-700 transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </motion.button>
-      ) : (
-        <Link to="/login" state={{ returnTo: location.pathname + location.search }}>
-          <div className="fixed bottom-6 right-6 z-40 px-6 py-4 rounded-2xl bg-[#3f0009] text-white flex items-center justify-center shadow-xl font-bold text-sm">
-            Log in to confess
-          </div>
-        </Link>
-      )}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setComposeOpen(true)}
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-pink-600 text-white flex items-center justify-center shadow-xl hover:bg-pink-700 transition-all"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </motion.button>
 
       {composeOpen && <ComposeModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} channelId={channelId} />}
     </div>

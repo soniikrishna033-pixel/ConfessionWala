@@ -55,6 +55,15 @@ export function AuthProvider({ children }) {
           await signInAnonymously(auth);
         } catch (error) {
           console.error("Anonymous auth failed", error);
+          
+          // Fallback to local storage ID if anonymous auth is disabled
+          let fallbackId = localStorage.getItem("cw_anon_id");
+          if (!fallbackId) {
+            fallbackId = "anon_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("cw_anon_id", fallbackId);
+          }
+          
+          setCurrentUser({ uid: fallbackId, isAnonymous: true });
           setUserProfile(null);
         }
       }

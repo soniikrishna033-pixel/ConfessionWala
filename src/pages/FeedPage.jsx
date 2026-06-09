@@ -51,12 +51,8 @@ export default function FeedPage() {
   };
 
   const handleJoin = async (channelId) => {
-    if (!currentUser) {
-      navigate("/login");
-      return;
-    }
     try {
-      await joinChannel(channelId, currentUser.uid);
+      await joinChannel(channelId, currentUser?.uid || "anon_user");
       navigate(`/c/${channelId}`);
     } catch (err) {
       console.error(err);
