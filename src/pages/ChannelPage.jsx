@@ -105,6 +105,18 @@ export default function ChannelPage() {
                 dynamicNum={confessions.length - i}
                 isChannelOwner={isOwner}
               />
+              {(i + 1) % 5 === 0 && (
+                <div className="flex justify-center my-6">
+                  <a 
+                    href="https://omg10.com/4/11133258" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-transform duration-200 text-center w-full max-w-sm border border-pink-400/50"
+                  >
+                    ✨ Exclusive Confessions ✨
+                  </a>
+                </div>
+              )}
             </React.Fragment>
           ))
         )}
